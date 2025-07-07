@@ -46,15 +46,30 @@ class _HomeSpageState extends State<HomeSpage> {
               ),
               SizedBox(height: 20),
               Container(
-                height: 200,
+                height: 160,
                 decoration: BoxDecoration(
                   color: const Color(0x9fDEF9C4),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 alignment: Alignment.center,
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Column(children: [Text('0')]),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('00.00', style: TextStyle(fontSize: 16)),
+                        Text('check in', style: TextStyle(fontSize: 16)),
+                      ],
+                    ),
+                    SizedBox(width: 60),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('00.00', style: TextStyle(fontSize: 16)),
+                        Text('check out', style: TextStyle(fontSize: 16)),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -65,7 +80,7 @@ class _HomeSpageState extends State<HomeSpage> {
                 child: ListView(
                   children: List.generate(6, (index) {
                     return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       child: Container(
                         height: 100,
                         decoration: BoxDecoration(
