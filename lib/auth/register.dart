@@ -67,7 +67,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xff0D47A1),
+      backgroundColor: const Color(0xff468585),
       body: Center(
         child: SingleChildScrollView(
           child: Column(

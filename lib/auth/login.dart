@@ -71,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: Color(0xff0D47A1),
+      backgroundColor: Color(0xff468585),
       body: SingleChildScrollView(
         child: Center(
           child: Column(

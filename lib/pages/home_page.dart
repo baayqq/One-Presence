@@ -10,265 +10,117 @@ class HomeSpage extends StatefulWidget {
 class _HomeSpageState extends State<HomeSpage> {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          Stack(
+    return Stack(
+      children: [
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: MediaQuery.of(context).size.height * 0.3,
+          child: Container(color: Color(0xff468585)),
+        ),
+        Positioned(
+          top: MediaQuery.of(context).size.height * 0.3,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: Container(color: Colors.white),
+        ),
+
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          child: Column(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(16)),
-                child: Container(
-                  width: double.infinity,
-                  height: 200,
-                  decoration: BoxDecoration(color: Color(0xff50B498)),
-                ),
-              ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(height: 200),
-                  Text(
-                    'Jangan Lupa Absen\nHari Ini',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Icon(Icons.account_circle, size: 72),
+                  SizedBox(width: 20),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Bayu Saputra', style: TextStyle(fontSize: 20)),
+                      Text('1231233', style: TextStyle(fontSize: 16)),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
-          SizedBox(height: 20),
-          Expanded(
-            child: ListView(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: double.infinity,
+              SizedBox(height: 20),
+              Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  color: const Color(0x9fDEF9C4),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                alignment: Alignment.center,
+                child: Row(
+                  children: [
+                    Column(children: [Text('0')]),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // List absensi
+              Expanded(
+                child: ListView(
+                  children: List.generate(6, (index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Container(
                         height: 100,
                         decoration: BoxDecoration(
-                          color: Color(0xff9CDBA6),
+                          color: const Color(0x8f9CDBA6),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Row(
                           children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Color(0xffDEF9C4),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  '13',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 28,
+                            Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Container(
+                                width: 100,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  color: const Color(0xffDEF9C4),
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    '13\nJuli',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                            SizedBox(width: 24),
-                            Container(
-                              child: Column(
-                                children: [Text('Check In'), Text('07:50:00')],
-                              ),
+                            const SizedBox(width: 28),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Text('Check In'),
+                                Text('07:50:00'),
+                              ],
                             ),
-                            SizedBox(width: 24),
-                            Container(
-                              child: Column(
-                                children: [Text('Check Out'), Text('17:50:00')],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 12),
-                      Container(
-                        width: double.infinity,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: Colors.white70,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(color: Colors.white),
-                              child: Text('13'),
-                            ),
-                            SizedBox(width: 24),
-                            Container(
-                              child: Column(
-                                children: [Text('Check In'), Text('07:50:00')],
-                              ),
-                            ),
-                            SizedBox(width: 24),
-                            Container(
-                              child: Column(
-                                children: [Text('Check Out'), Text('17:50:00')],
-                              ),
+                            const SizedBox(width: 52),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Text('Check Out'),
+                                Text('17:50:00'),
+                              ],
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 12),
-                      Container(
-                        width: double.infinity,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: Colors.white70,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(color: Colors.white),
-                              child: Text('13'),
-                            ),
-                            SizedBox(width: 24),
-                            Container(
-                              child: Column(
-                                children: [Text('Check In'), Text('07:50:00')],
-                              ),
-                            ),
-                            SizedBox(width: 24),
-                            Container(
-                              child: Column(
-                                children: [Text('Check Out'), Text('17:50:00')],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 12),
-                      Container(
-                        width: double.infinity,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: Colors.white70,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(color: Colors.white),
-                              child: Text('13'),
-                            ),
-                            SizedBox(width: 24),
-                            Container(
-                              child: Column(
-                                children: [Text('Check In'), Text('07:50:00')],
-                              ),
-                            ),
-                            SizedBox(width: 24),
-                            Container(
-                              child: Column(
-                                children: [Text('Check Out'), Text('17:50:00')],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 12),
-                      Container(
-                        width: double.infinity,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: Colors.white70,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(color: Colors.white),
-                              child: Text('13'),
-                            ),
-                            SizedBox(width: 24),
-                            Container(
-                              child: Column(
-                                children: [Text('Check In'), Text('07:50:00')],
-                              ),
-                            ),
-                            SizedBox(width: 24),
-                            Container(
-                              child: Column(
-                                children: [Text('Check Out'), Text('17:50:00')],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 12),
-                      Container(
-                        width: double.infinity,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: Colors.white70,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(color: Colors.white),
-                              child: Text('13'),
-                            ),
-                            SizedBox(width: 24),
-                            Container(
-                              child: Column(
-                                children: [Text('Check In'), Text('07:50:00')],
-                              ),
-                            ),
-                            SizedBox(width: 24),
-                            Container(
-                              child: Column(
-                                children: [Text('Check Out'), Text('17:50:00')],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 12),
-                      Container(
-                        width: double.infinity,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: Colors.white70,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(color: Colors.white),
-                              child: Text('13'),
-                            ),
-                            SizedBox(width: 24),
-                            Container(
-                              child: Column(
-                                children: [Text('Check In'), Text('07:50:00')],
-                              ),
-                            ),
-                            SizedBox(width: 24),
-                            Container(
-                              child: Column(
-                                children: [Text('Check Out'), Text('17:50:00')],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  }),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
