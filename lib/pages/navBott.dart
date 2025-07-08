@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:onepresence/pages/home_page.dart';
-import 'package:onepresence/pages/profile.dart';
-import 'package:onepresence/pages/riwayat.dart';
+import 'package:onepresence/pages/in_navbot/home_page.dart';
+import 'package:onepresence/pages/in_navbot/profile.dart';
+import 'package:onepresence/pages/in_navbot/riwayat.dart';
 
 class HomeBottom extends StatefulWidget {
   const HomeBottom({super.key});
@@ -31,20 +31,20 @@ class _HomeBottomState extends State<HomeBottom> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xffF1F1F5),
-      appBar: AppBar(
-        title: Text(
-          _appBarTitles[_pilihIndex],
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
-            color: Colors.white,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Color(0xff468585),
-        iconTheme: IconThemeData(color: Colors.white),
-      ),
 
+      // appBar: AppBar(
+      //   title: Text(
+      //     _appBarTitles[_pilihIndex],
+      //     style: TextStyle(
+      //       fontWeight: FontWeight.bold,
+      //       fontSize: 24,
+      //       color: Colors.white,
+      //     ),
+      //   ),
+      //   centerTitle: true,
+      //   backgroundColor: Color(0xff468585),
+      //   iconTheme: IconThemeData(color: Colors.white),
+      // ),
       body: _butonNavigator[_pilihIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,

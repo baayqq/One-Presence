@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:onepresence/api/api_file.dart';
 import 'package:onepresence/auth/login.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -13,55 +15,61 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController userController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController batchIdController = TextEditingController();
+  final TextEditingController trainingIdController = TextEditingController();
+  final TextEditingController genderController = TextEditingController();
   final formKey = GlobalKey<FormState>();
+  String? selectedGender;
 
-  // void handleRegist() async {
-  //   if (formKey.currentState!.validate()) {
-  //     final res = await userService.registUser(
-  //       userController.text,
-  //       emailController.text,
-  //       passwordController.text,
-  //     );
+  void handleRegist() async {
+    if (formKey.currentState!.validate()) {
+      final res = await UserService().registUser(
+        userController.text,
+        emailController.text,
+        passwordController.text,
+        genderController.text,
+        batchIdController.text,
+        trainingIdController.text,
+      );
 
-  //     if (res['data'] != null && res['data']['user'] != null) {
-  //       final String name = res['data']['user']['name'];
-  //       final String email = res['data']['user']['email'];
+      if (res['data'] != null && res['data']['user'] != null) {
+        final String name = res['data']['user']['name'];
+        final String email = res['data']['user']['email'];
 
-  //       // Simpan nama dan email ke SharedPreferences
-  //       final prefs = await SharedPreferences.getInstance();
-  //       await prefs.setString('username', name);
-  //       await prefs.setString('email', email);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('username', name);
+        await prefs.setString('email', email);
 
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text('Registrasi berhasil! Selamat datang, $name'),
-  //           backgroundColor: Colors.green,
-  //         ),
-  //       );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Registrasi berhasil! Selamat datang, $name'),
+            backgroundColor: Colors.green,
+          ),
+        );
 
-  //       Navigator.pushReplacement(
-  //         context,
-  //         MaterialPageRoute(builder: (context) => const LoginPage()),
-  //       );
-  //     } else if (res['errors'] != null) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text('Maaf: ${res['message']}'),
-  //           backgroundColor: Colors.red,
-  //         ),
-  //       );
-  //     }
-  //   }
-  // }
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+      } else if (res['errors'] != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Maaf: ${res['message']}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
-  // ignore: unused_element
   void dispose() {
-    // Buat membersihkan controller dari memori
     userController.dispose();
     emailController.dispose();
     passwordController.dispose();
-    super.dispose(); // Jangan lupa super.dispose()
+    batchIdController.dispose();
+    trainingIdController.dispose();
+    super.dispose();
   }
 
   @override
@@ -73,8 +81,10 @@ class _RegisterPageState extends State<RegisterPage> {
           child: Column(
             children: [
               const SizedBox(height: 48),
-              Text('Selamat Datang', style: TextStyle(color: Colors.white)),
-
+              const Text(
+                'Selamat Datang',
+                style: TextStyle(color: Colors.white),
+              ),
               const SizedBox(height: 36),
               Padding(
                 padding: const EdgeInsets.all(28.0),
@@ -105,75 +115,101 @@ class _RegisterPageState extends State<RegisterPage> {
                         const SizedBox(height: 20),
                         TextFormField(
                           controller: userController,
-                          decoration: InputDecoration(
-                            hintText: "Nama",
-                            prefixIcon: const Icon(Icons.account_box),
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
+                          decoration: inputDecoration(
+                            "Nama",
+                            Icons.account_box,
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Nama wajib diisi';
-                            }
-                            return null;
-                          },
+                          validator:
+                              (value) =>
+                                  value == null || value.isEmpty
+                                      ? 'Nama wajib diisi'
+                                      : null,
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: emailController,
-                          decoration: InputDecoration(
-                            hintText: "Email",
-                            prefixIcon: const Icon(Icons.email),
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Email wajib diisi';
-                            }
-                            return null;
-                          },
+                          decoration: inputDecoration("Email", Icons.email),
+                          validator:
+                              (value) =>
+                                  value == null || value.isEmpty
+                                      ? 'Email wajib diisi'
+                                      : null,
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: passwordController,
                           obscureText: isObsecure,
-                          decoration: InputDecoration(
-                            hintText: "Password",
-                            prefixIcon: const Icon(Icons.lock),
+                          decoration: inputDecoration(
+                            "Password",
+                            Icons.lock,
+                          ).copyWith(
                             suffixIcon: IconButton(
                               icon: Icon(
                                 isObsecure
                                     ? Icons.visibility_off
                                     : Icons.visibility,
                               ),
-                              onPressed: () {
-                                setState(() {
-                                  isObsecure = !isObsecure;
-                                });
-                              },
-                            ),
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
+                              onPressed:
+                                  () =>
+                                      setState(() => isObsecure = !isObsecure),
                             ),
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Password wajib diisi';
-                            }
-                            return null;
-                          },
+                          validator:
+                              (value) =>
+                                  value == null || value.isEmpty
+                                      ? 'Password wajib diisi'
+                                      : null,
+                        ),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          value: selectedGender,
+                          hint: const Text("Jenis Kelamin"),
+                          items: const [
+                            DropdownMenuItem(
+                              value: "L",
+                              child: Text("Laki-laki"),
+                            ),
+                            DropdownMenuItem(
+                              value: "P",
+                              child: Text("Perempuan"),
+                            ),
+                          ],
+                          onChanged:
+                              (value) => setState(() => selectedGender = value),
+                          decoration: inputDecoration("", Icons.wc),
+                          validator:
+                              (value) =>
+                                  value == null
+                                      ? 'Jenis kelamin wajib dipilih'
+                                      : null,
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: batchIdController,
+                          keyboardType: TextInputType.number,
+                          decoration: inputDecoration(
+                            "Batch ID",
+                            Icons.confirmation_number,
+                          ),
+                          validator:
+                              (value) =>
+                                  value == null || value.isEmpty
+                                      ? 'Batch ID wajib diisi'
+                                      : null,
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: trainingIdController,
+                          keyboardType: TextInputType.number,
+                          decoration: inputDecoration(
+                            "Training ID",
+                            Icons.school,
+                          ),
+                          validator:
+                              (value) =>
+                                  value == null || value.isEmpty
+                                      ? 'Training ID wajib diisi'
+                                      : null,
                         ),
                         const SizedBox(height: 24),
                         SizedBox(
@@ -186,8 +222,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            onPressed: () {},
-                            child: Text(
+                            onPressed: handleRegist,
+                            child: const Text(
                               'Register',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
@@ -209,14 +245,13 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                             ),
                             TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => LoginPage(),
+                              onPressed:
+                                  () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const LoginPage(),
+                                    ),
                                   ),
-                                );
-                              },
                               child: const Text(
                                 "Login",
                                 style: TextStyle(
@@ -236,6 +271,19 @@ class _RegisterPageState extends State<RegisterPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  InputDecoration inputDecoration(String hint, IconData icon) {
+    return InputDecoration(
+      hintText: hint,
+      prefixIcon: Icon(icon),
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
       ),
     );
   }
