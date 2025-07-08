@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:onepresence/api/api_file.dart';
 import 'package:onepresence/auth/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:onepresence/model/training_model.dart' as trainingModel;
+import 'package:onepresence/model/batch_model.dart' as batchModel;
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -15,11 +17,51 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController userController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController batchIdController = TextEditingController();
-  final TextEditingController trainingIdController = TextEditingController();
   final TextEditingController genderController = TextEditingController();
   final formKey = GlobalKey<FormState>();
   String? selectedGender;
+  String? selectedBatch;
+  List<trainingModel.Training> trainingList = [];
+  bool isTrainingLoading = false;
+  int? selectedTrainingId;
+  List<batchModel.Batch> batchList = [];
+  bool isBatchLoading = false;
+  int? selectedBatchId;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchBatches();
+    fetchTrainings();
+  }
+
+  Future<void> fetchBatches() async {
+    setState(() {
+      isBatchLoading = true;
+    });
+    try {
+      batchList = await UserService().getBatches();
+    } catch (e) {
+      batchList = [];
+    }
+    setState(() {
+      isBatchLoading = false;
+    });
+  }
+
+  Future<void> fetchTrainings() async {
+    setState(() {
+      isTrainingLoading = true;
+    });
+    try {
+      trainingList = await UserService().getTrainings();
+    } catch (e) {
+      trainingList = [];
+    }
+    setState(() {
+      isTrainingLoading = false;
+    });
+  }
 
   void handleRegist() async {
     if (formKey.currentState!.validate()) {
@@ -27,9 +69,9 @@ class _RegisterPageState extends State<RegisterPage> {
         userController.text,
         emailController.text,
         passwordController.text,
-        genderController.text,
-        batchIdController.text,
-        trainingIdController.text,
+        selectedGender?.toString() ?? '',
+        selectedBatchId?.toString() ?? '',
+        selectedTrainingId?.toString() ?? '',
       );
 
       if (res['data'] != null && res['data']['user'] != null) {
@@ -52,11 +94,16 @@ class _RegisterPageState extends State<RegisterPage> {
           MaterialPageRoute(builder: (context) => const LoginPage()),
         );
       } else if (res['errors'] != null) {
+        String errorMsg = res['message'] ?? 'Registrasi gagal.';
+        if (res['errors'] is Map && res['errors'].isNotEmpty) {
+          res['errors'].forEach((key, value) {
+            if (value is List && value.isNotEmpty) {
+              errorMsg += '\n- ${value[0]}';
+            }
+          });
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Maaf: ${res['message']}'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
         );
       }
     }
@@ -67,8 +114,6 @@ class _RegisterPageState extends State<RegisterPage> {
     userController.dispose();
     emailController.dispose();
     passwordController.dispose();
-    batchIdController.dispose();
-    trainingIdController.dispose();
     super.dispose();
   }
 
@@ -165,14 +210,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           value: selectedGender,
                           hint: const Text("Jenis Kelamin"),
                           items: const [
-                            DropdownMenuItem(
-                              value: "L",
-                              child: Text("Laki-laki"),
-                            ),
-                            DropdownMenuItem(
-                              value: "P",
-                              child: Text("Perempuan"),
-                            ),
+                            DropdownMenuItem(value: "L", child: Text("L")),
+                            DropdownMenuItem(value: "P", child: Text("P")),
                           ],
                           onChanged:
                               (value) => setState(() => selectedGender = value),
@@ -184,31 +223,66 @@ class _RegisterPageState extends State<RegisterPage> {
                                       : null,
                         ),
                         const SizedBox(height: 16),
-                        TextFormField(
-                          controller: batchIdController,
-                          keyboardType: TextInputType.number,
+                        DropdownButtonFormField<int>(
+                          isExpanded: true,
+                          value: selectedBatchId,
+                          hint: const Text("Batch ID"),
+                          items:
+                              isBatchLoading
+                                  ? []
+                                  : batchList
+                                      .map(
+                                        (batch) => DropdownMenuItem(
+                                          value: batch.id,
+                                          child: Text('Batch ${batch.batchKe}'),
+                                        ),
+                                      )
+                                      .toList(),
+                          onChanged:
+                              isBatchLoading
+                                  ? null
+                                  : (value) =>
+                                      setState(() => selectedBatchId = value),
                           decoration: inputDecoration(
                             "Batch ID",
                             Icons.confirmation_number,
                           ),
                           validator:
                               (value) =>
-                                  value == null || value.isEmpty
-                                      ? 'Batch ID wajib diisi'
+                                  value == null
+                                      ? 'Batch ID wajib dipilih'
                                       : null,
                         ),
                         const SizedBox(height: 16),
-                        TextFormField(
-                          controller: trainingIdController,
-                          keyboardType: TextInputType.number,
+                        DropdownButtonFormField<int>(
+                          isExpanded: true,
+                          value: selectedTrainingId,
+                          hint: const Text("Training ID"),
+                          items:
+                              isTrainingLoading
+                                  ? []
+                                  : trainingList
+                                      .map(
+                                        (training) => DropdownMenuItem(
+                                          value: training.id,
+                                          child: Text(training.title),
+                                        ),
+                                      )
+                                      .toList(),
+                          onChanged:
+                              isTrainingLoading
+                                  ? null
+                                  : (value) => setState(
+                                    () => selectedTrainingId = value,
+                                  ),
                           decoration: inputDecoration(
                             "Training ID",
                             Icons.school,
                           ),
                           validator:
                               (value) =>
-                                  value == null || value.isEmpty
-                                      ? 'Training ID wajib diisi'
+                                  value == null
+                                      ? 'Training ID wajib dipilih'
                                       : null,
                         ),
                         const SizedBox(height: 24),

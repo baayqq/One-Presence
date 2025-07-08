@@ -2,6 +2,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:onepresence/api/endpoint.dart';
 import 'package:onepresence/model/registmodel.dart';
+import 'package:onepresence/model/training_model.dart' as trainingModel;
+import 'package:onepresence/model/register_error_model.dart';
+import 'package:onepresence/model/batch_model.dart' as batchModel;
+import 'package:onepresence/model/login_model.dart';
+import 'package:onepresence/model/login_error_model.dart';
+import 'package:onepresence/model/profile_model.dart';
+import 'package:onepresence/model/absen_stats_model.dart';
 
 class UserService {
   Future<Map<String, dynamic>> registUser(
@@ -28,9 +35,78 @@ class UserService {
     if (response.statusCode == 200) {
       return registerModelFromJson(response.body).toJson();
     } else if (response.statusCode == 422) {
-      return {'message': 'Validasi gagal', 'errors': jsonDecode(response.body)};
+      final error = RegisterError.fromJson(jsonDecode(response.body));
+      return {'message': error.message, 'errors': error.errors};
     } else {
       throw Exception('Gagal mendaftar akun. [${response.statusCode}]');
+    }
+  }
+
+  Future<List<trainingModel.Training>> getTrainings() async {
+    final response = await http.get(
+      Uri.parse('https://appabsensi.mobileprojp.com/api/trainings'),
+    );
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      final listResponse = trainingModel.TrainingListResponse.fromJson(
+        jsonData,
+      );
+      return listResponse.data;
+    } else {
+      throw Exception('Gagal mengambil data pelatihan');
+    }
+  }
+
+  Future<List<batchModel.Batch>> getBatches() async {
+    final response = await http.get(
+      Uri.parse('https://appabsensi.mobileprojp.com/api/batches'),
+    );
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      final listResponse = batchModel.BatchListResponse.fromJson(jsonData);
+      return listResponse.data;
+    } else {
+      throw Exception('Gagal mengambil data batch');
+    }
+  }
+
+  Future<LoginResponse> loginUser(String email, String password) async {
+    final response = await http.post(
+      Uri.parse('https://appabsensi.mobileprojp.com/api/login'),
+      headers: {'Accept': 'application/json'},
+      body: {'email': email, 'password': password},
+    );
+    if (response.statusCode == 200) {
+      return LoginResponse.fromJson(jsonDecode(response.body));
+    } else {
+      final error = LoginError.fromJson(jsonDecode(response.body));
+      throw Exception(error.message);
+    }
+  }
+
+  Future<ProfileResponse> getProfile(String token) async {
+    final response = await http.get(
+      Uri.parse('https://appabsensi.mobileprojp.com/api/profile'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+    );
+    if (response.statusCode == 200) {
+      return ProfileResponse.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Gagal mengambil data profil. [${response.statusCode}]');
+    }
+  }
+
+  Future<AbsenStatsResponse> getAbsenStats(String token) async {
+    final response = await http.get(
+      Uri.parse('https://appabsensi.mobileprojp.com/api/absen/stats'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+    );
+    if (response.statusCode == 200) {
+      return AbsenStatsResponse.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception(
+        'Gagal mengambil data absen stats. [${response.statusCode}]',
+      );
     }
   }
 }

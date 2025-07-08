@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onepresence/pages/in_navbot/home_page.dart';
 import 'package:onepresence/pages/in_navbot/profile.dart';
-import 'package:onepresence/pages/in_navbot/riwayat.dart';
+import 'package:onepresence/pages/in_navbot/rekappage.dart';
 
 class HomeBottom extends StatefulWidget {
   const HomeBottom({super.key});
@@ -15,11 +15,11 @@ class _HomeBottomState extends State<HomeBottom> {
 
   static final List<Widget> _butonNavigator = <Widget>[
     HomeSpage(),
-    HistoryPage(),
+    RekapAbs(),
     ProfilePage(),
   ];
 
-  static final List<String> _appBarTitles = ['Home', 'Riwayat', 'Profile'];
+  static final List<String> _appBarTitles = ['Home', 'Rekap', 'Profile'];
 
   void _pilihNavigator(int index) {
     setState(() {
@@ -50,7 +50,7 @@ class _HomeBottomState extends State<HomeBottom> {
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Riwayat'),
+          BottomNavigationBarItem(icon: Icon(Icons.receipt), label: 'Rekap'),
           BottomNavigationBarItem(
             icon: Icon(Icons.account_circle),
             label: 'Profile',

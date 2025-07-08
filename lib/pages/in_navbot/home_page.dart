@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:onepresence/pages/absen.dart';
+import 'package:onepresence/pages/absenin.dart';
+import 'package:onepresence/pages/absenout.dart';
 
 class HomeSpage extends StatefulWidget {
   const HomeSpage({super.key});
@@ -177,7 +178,14 @@ class _HomeSpageState extends State<HomeSpage> {
                             const SizedBox(width: 16),
                             Expanded(
                               child: ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AbsensOut(),
+                                    ),
+                                  );
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.grey.shade300,
                                   padding: const EdgeInsets.symmetric(

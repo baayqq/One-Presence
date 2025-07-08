@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onepresence/auth/login.dart';
+import 'package:onepresence/pages/navBott.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -7,6 +9,12 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
+  Future<bool> isLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    return token != null && token.isNotEmpty;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +24,19 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
       ),
-      home: LoginPage(),
+      home: FutureBuilder<bool>(
+        future: isLoggedIn(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.data == true) {
+            return HomeBottom();
+          } else {
+            return LoginPage();
+          }
+        },
+      ),
     );
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:onepresence/auth/register.dart';
 import 'package:onepresence/pages/navBott.dart';
+import 'package:onepresence/api/api_file.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,57 +17,46 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final formKey = GlobalKey<FormState>();
-  // void handleLogin() async {
-  //   if (formKey.currentState!.validate()) {
-  //     try {
-  //       final res = await userService.loginUser(
-  //         userController.text,
-  //         emailController.text,
-  //         passwordController.text,
-  //       );
-  //       print("Respon dari API: $res");
-
-  //       if (res['data'] != null) {
-  //         final token = res['data']['token'];
-  //         await SharedPrefService.saveToken(token);
-
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           SnackBar(
-  //             content: Text('Login berhasil'),
-  //             backgroundColor: Colors.green,
-  //           ),
-  //         );
-  //         Navigator.pushAndRemoveUntil(
-  //           context,
-  //           MaterialPageRoute(builder: (context) => HomeBottom()),
-  //           (route) => false,
-  //         );
-  //       } else if (res['message'] != null) {
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           SnackBar(
-  //             content: Text('Maaf: ${res['message']}'),
-  //             backgroundColor: Colors.red,
-  //           ),
-  //         );
-  //       } else {
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           const SnackBar(
-  //             content: Text('Login gagal. Cek kembali email dan password.'),
-  //             backgroundColor: Colors.red,
-  //           ),
-  //         );
-  //       }
-  //     } catch (e) {
-  //       // Tangkap semua exception dari UserService
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text('Terjadi kesalahan: $e'),
-  //           backgroundColor: Colors.red,
-  //         ),
-  //       );
-  //     }
-  //   }
-  // }
+  void handleLogin() async {
+    if (formKey.currentState!.validate()) {
+      try {
+        final res = await UserService().loginUser(
+          emailController.text,
+          passwordController.text,
+        );
+        if (res.data != null) {
+          final token = res.data!.token;
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', token);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Login berhasil'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => HomeBottom()),
+            (route) => false,
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Login gagal. Cek kembali email dan password.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -173,18 +164,7 @@ class _LoginPageState extends State<LoginPage> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            onPressed: () {
-                              if (formKey.currentState!.validate()) {
-                                print('Berhasil');
-                                Navigator.pushAndRemoveUntil(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => HomeBottom(),
-                                  ),
-                                  (route) => false,
-                                );
-                              }
-                            },
+                            onPressed: handleLogin,
                             child: Text(
                               'LOGIN',
                               style: TextStyle(
