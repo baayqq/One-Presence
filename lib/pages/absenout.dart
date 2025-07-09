@@ -7,6 +7,9 @@ import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onepresence/api/absen_checkout_api.dart';
 import 'package:onepresence/model/absen_checkout_model.dart';
+import 'package:onepresence/pages/in_navbot/home_page.dart';
+import 'package:onepresence/pages/navBott.dart';
+import 'package:onepresence/api/absen_api.dart';
 
 class AbsensOut extends StatefulWidget {
   const AbsensOut({super.key});
@@ -23,7 +26,6 @@ class _AbsensOutState extends State<AbsensOut> {
   bool _loading = true;
   String? _userName;
   bool _checkedOut = false;
-  File? _imageFile;
   final double _radius = 10.0; // meter
   final LatLng _officeLocation = const LatLng(
     -6.210879,
@@ -31,6 +33,18 @@ class _AbsensOutState extends State<AbsensOut> {
   ); // Ganti dengan lokasi kantor
   double _distance = 0.0;
   bool _isSubmitting = false;
+
+  // Helper untuk cek apakah tanggal pada string adalah hari ini
+  bool isToday(String? dateTimeStr) {
+    if (dateTimeStr == null || dateTimeStr.isEmpty) return false;
+    try {
+      final dt = DateTime.parse(dateTimeStr.replaceFirst(' ', 'T'));
+      final now = DateTime.now();
+      return dt.year == now.year && dt.month == now.month && dt.day == now.day;
+    } catch (_) {
+      return false;
+    }
+  }
 
   Future<void> _getCurrentLocation() async {
     setState(() {
@@ -113,23 +127,35 @@ class _AbsensOutState extends State<AbsensOut> {
     });
   }
 
-  Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(
-      source: ImageSource.camera,
-    );
-    if (pickedFile != null) {
-      if (!mounted) return;
-      setState(() {
-        _imageFile = File(pickedFile.path);
-      });
-    }
-  }
-
   @override
   void initState() {
     super.initState();
     _getCurrentLocation();
     _getUserName();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _refreshAbsenStatus();
+  }
+
+  Future<void> _refreshAbsenStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) return;
+    final response = await fetchAbsenToday(token);
+    final data = response.data;
+    setState(() {
+      if (data == null ||
+          data.jamKeluar == null ||
+          data.jamKeluar.isEmpty ||
+          !isToday(data.jamKeluar)) {
+        _checkedOut = false;
+      } else if (isToday(data.jamKeluar)) {
+        _checkedOut = true;
+      }
+    });
   }
 
   @override
@@ -176,12 +202,12 @@ class _AbsensOutState extends State<AbsensOut> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Nama: \\${_userName ?? ''}',
+                          'Nama: ${_userName ?? ''}',
                           style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Status: \\${_checkedOut ? 'Sudah check-out' : 'Belum check-out'}',
+                          'Status: ${_checkedOut ? 'Sudah check-out' : 'Belum check-out'}',
                           style: TextStyle(
                             fontSize: 16,
                             color: _checkedOut ? Colors.green : Colors.red,
@@ -189,37 +215,18 @@ class _AbsensOutState extends State<AbsensOut> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Radius lokasi: \\$_radius meter',
+                          'Radius lokasi: $_radius meter',
                           style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Jarak ke kantor: \\${_distance.toStringAsFixed(2)} meter',
+                          'Jarak ke kantor: ${_distance.toStringAsFixed(2)} meter',
                           style: const TextStyle(fontSize: 16),
                         ),
-                        const SizedBox(height: 16),
-                        _imageFile == null
-                            ? ElevatedButton.icon(
-                              onPressed: _pickImage,
-                              icon: const Icon(Icons.camera_alt),
-                              label: const Text('Upload Foto dari Kamera'),
-                            )
-                            : Column(
-                              children: [
-                                Image.file(_imageFile!, height: 120),
-                                const SizedBox(height: 8),
-                                ElevatedButton.icon(
-                                  onPressed: _pickImage,
-                                  icon: const Icon(Icons.camera_alt),
-                                  label: const Text('Ganti Foto'),
-                                ),
-                              ],
-                            ),
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed:
                               (!_checkedOut &&
-                                      _imageFile != null &&
                                       _distance <= _radius &&
                                       !_isSubmitting)
                                   ? () async {
@@ -240,7 +247,6 @@ class _AbsensOutState extends State<AbsensOut> {
                                         lat: _currentPosition.latitude,
                                         lng: _currentPosition.longitude,
                                         address: _currentAddress,
-                                        imagePath: _imageFile!.path,
                                       );
                                       setState(() {
                                         _checkedOut = true;
@@ -252,6 +258,13 @@ class _AbsensOutState extends State<AbsensOut> {
                                           content: Text(response.message),
                                           backgroundColor: Colors.green,
                                         ),
+                                      );
+                                      Navigator.pushAndRemoveUntil(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => HomeBottom(),
+                                        ),
+                                        (route) => false,
                                       );
                                     } catch (e) {
                                       ScaffoldMessenger.of(
@@ -297,13 +310,11 @@ class _AbsensOutState extends State<AbsensOut> {
                                     ),
                                   ),
                         ),
-                        if (_imageFile == null || _distance > _radius)
+                        if (_distance > _radius)
                           Padding(
                             padding: const EdgeInsets.only(top: 8.0),
                             child: Text(
-                              _imageFile == null
-                                  ? 'Silakan upload foto dari kamera.'
-                                  : 'Anda harus berada dalam radius \\$_radius meter dari kantor.',
+                              'Anda harus berada dalam radius $_radius meter dari kantor.',
                               style: const TextStyle(color: Colors.red),
                             ),
                           ),

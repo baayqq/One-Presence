@@ -7,7 +7,6 @@ Future<AbsenCheckoutResponse> absenCheckOut({
   required double lat,
   required double lng,
   required String address,
-  required String imagePath,
 }) async {
   final uri = Uri.parse(
     'https://appabsensi.mobileprojp.com/api/absen/check-out',
@@ -18,8 +17,6 @@ Future<AbsenCheckoutResponse> absenCheckOut({
         ..fields['check_out_lat'] = lat.toString()
         ..fields['check_out_lng'] = lng.toString()
         ..fields['check_out_address'] = address;
-
-  request.files.add(await http.MultipartFile.fromPath('photo', imagePath));
 
   final streamedResponse = await request.send();
   final response = await http.Response.fromStream(streamedResponse);

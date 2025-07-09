@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onepresence/api/absen_status_api.dart';
 import 'package:onepresence/model/absen_status_model.dart';
 import 'package:onepresence/api/absen_api.dart';
+import 'package:onepresence/pages/in_navbot/home_page.dart';
+import 'package:onepresence/pages/navBott.dart';
 
 class Absens extends StatefulWidget {
   const Absens({super.key});
@@ -25,7 +27,6 @@ class _AbsensState extends State<Absens> {
   String? _userName;
   bool _checkedIn = false;
   String? _absenStatusMessage;
-  File? _imageFile;
   final double _radius = 1.0; // meter
   final LatLng _officeLocation = const LatLng(
     -6.210879,
@@ -33,6 +34,18 @@ class _AbsensState extends State<Absens> {
   ); // Ganti dengan lokasi kantor
   double _distance = 0.0;
   bool _isSubmitting = false;
+
+  // Helper untuk cek apakah tanggal pada string adalah hari ini
+  bool isToday(String? dateTimeStr) {
+    if (dateTimeStr == null || dateTimeStr.isEmpty) return false;
+    try {
+      final dt = DateTime.parse(dateTimeStr.replaceFirst(' ', 'T'));
+      final now = DateTime.now();
+      return dt.year == now.year && dt.month == now.month && dt.day == now.day;
+    } catch (_) {
+      return false;
+    }
+  }
 
   Future<void> _getCurrentLocation() async {
     setState(() {
@@ -115,24 +128,44 @@ class _AbsensState extends State<Absens> {
     });
   }
 
-  Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(
-      source: ImageSource.camera,
-    );
-    if (pickedFile != null) {
-      if (!mounted) return;
-      setState(() {
-        _imageFile = File(pickedFile.path);
-      });
-    }
-  }
-
   @override
   void initState() {
     super.initState();
     _getCurrentLocation();
     _getUserName();
     _checkAbsenStatus();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _refreshAbsenStatus();
+  }
+
+  Future<void> _refreshAbsenStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) return;
+    final response = await fetchAbsenToday(token);
+    final data = response.data;
+    setState(() {
+      if (data == null ||
+          data.jamMasuk == null ||
+          data.jamMasuk.isEmpty ||
+          !isToday(data.jamMasuk)) {
+        _checkedIn = false;
+        _absenStatusMessage = "Belum check-in";
+      } else if (isToday(data.jamMasuk) &&
+          (data.jamKeluar == null ||
+              data.jamKeluar.isEmpty ||
+              !isToday(data.jamKeluar))) {
+        _checkedIn = true;
+        _absenStatusMessage = "Sudah check-in, belum check-out";
+      } else if (isToday(data.jamKeluar)) {
+        _checkedIn = true;
+        _absenStatusMessage = "Sudah check-out";
+      }
+    });
   }
 
   Future<void> _checkAbsenStatus() async {
@@ -233,28 +266,9 @@ class _AbsensState extends State<Absens> {
                           style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 16),
-                        _imageFile == null
-                            ? ElevatedButton.icon(
-                              onPressed: _pickImage,
-                              icon: const Icon(Icons.camera_alt),
-                              label: const Text('Upload Foto dari Kamera'),
-                            )
-                            : Column(
-                              children: [
-                                Image.file(_imageFile!, height: 120),
-                                const SizedBox(height: 8),
-                                ElevatedButton.icon(
-                                  onPressed: _pickImage,
-                                  icon: const Icon(Icons.camera_alt),
-                                  label: const Text('Ganti Foto'),
-                                ),
-                              ],
-                            ),
-                        const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed:
                               (!_checkedIn &&
-                                      _imageFile != null &&
                                       _distance <= _radius &&
                                       !_isSubmitting)
                                   ? () async {
@@ -276,7 +290,6 @@ class _AbsensState extends State<Absens> {
                                         lat: _currentPosition.latitude,
                                         lng: _currentPosition.longitude,
                                         address: _currentAddress,
-                                        imagePath: _imageFile!.path,
                                       );
                                       if (!mounted) return;
                                       if (response.message.contains(
@@ -305,8 +318,15 @@ class _AbsensState extends State<Absens> {
                                             backgroundColor: Colors.green,
                                           ),
                                         );
+                                        Navigator.pushAndRemoveUntil(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => HomeBottom(),
+                                          ),
+                                          (route) => false,
+                                        );
                                       }
-                                      await _checkAbsenStatus(); // Tambahkan ini agar status UI update
+                                      await _checkAbsenStatus();
                                     } catch (e) {
                                       if (!mounted) return;
                                       ScaffoldMessenger.of(
@@ -317,7 +337,7 @@ class _AbsensState extends State<Absens> {
                                           backgroundColor: Colors.red,
                                         ),
                                       );
-                                      await _checkAbsenStatus(); // Tambahkan ini juga pada error
+                                      await _checkAbsenStatus();
                                     } finally {
                                       if (!mounted) return;
                                       setState(() {
@@ -362,13 +382,11 @@ class _AbsensState extends State<Absens> {
                               style: const TextStyle(color: Colors.red),
                             ),
                           ),
-                        if (_imageFile == null || _distance > _radius)
+                        if (_distance > _radius)
                           Padding(
                             padding: const EdgeInsets.only(top: 8.0),
                             child: Text(
-                              _imageFile == null
-                                  ? 'Silakan upload foto dari kamera.'
-                                  : 'Anda harus berada dalam radius $_radius meter dari kantor.',
+                              'Anda harus berada dalam radius $_radius meter dari kantor.',
                               style: const TextStyle(color: Colors.red),
                             ),
                           ),

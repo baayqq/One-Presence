@@ -9,6 +9,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onepresence/api/absen_history_api.dart';
 import 'package:onepresence/model/absen_history_model.dart';
 import 'package:onepresence/pages/absensi_history_page.dart';
+import 'package:onepresence/api/api_file.dart';
+import 'package:onepresence/model/profile_model.dart';
+import 'dart:convert';
+import 'dart:typed_data';
 
 class HomeSpage extends StatefulWidget {
   const HomeSpage({super.key});
@@ -26,6 +30,7 @@ class _HomeSpageState extends State<HomeSpage> {
   List<AbsenHistoryData> _absenHistory = [];
   bool _loadingHistory = true;
   String? _historyError;
+  ProfileData? _profile;
 
   @override
   void initState() {
@@ -36,11 +41,22 @@ class _HomeSpageState extends State<HomeSpage> {
   }
 
   void _startClock() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) async {
       if (!mounted) return;
       setState(() {
         _now = DateTime.now();
       });
+      await _refreshProfile();
+    });
+  }
+
+  Future<void> _refreshProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    final profileResponse = await UserService().getProfile(token);
+    if (!mounted) return;
+    setState(() {
+      _profile = profileResponse.data;
     });
   }
 
@@ -100,6 +116,44 @@ class _HomeSpageState extends State<HomeSpage> {
     }
   }
 
+  Future<ProfileData?> _fetchProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    final profileResponse = await UserService().getProfile(token);
+    return profileResponse.data;
+  }
+
+  // Helper untuk handle base64, url, atau path
+  ImageProvider? base64ImageProvider(String? base64String) {
+    if (base64String == null || base64String.isEmpty) return null;
+    if (base64String.startsWith('data:image')) {
+      try {
+        final bytes = base64Decode(base64String.split(',').last);
+        return MemoryImage(bytes);
+      } catch (_) {
+        return null;
+      }
+    }
+    if (base64String.startsWith('http')) {
+      return NetworkImage(base64String);
+    }
+    return NetworkImage(
+      'https://appabsensi.mobileprojp.com/public/$base64String',
+    );
+  }
+
+  // Helper untuk cek apakah tanggal pada string adalah hari ini
+  bool isToday(String? dateTimeStr) {
+    if (dateTimeStr == null || dateTimeStr.isEmpty) return false;
+    try {
+      final dt = DateTime.parse(dateTimeStr.replaceFirst(' ', 'T'));
+      final now = DateTime.now();
+      return dt.year == now.year && dt.month == now.month && dt.day == now.day;
+    } catch (_) {
+      return false;
+    }
+  }
+
   @override
   void dispose() {
     _timer.cancel();
@@ -130,20 +184,63 @@ class _HomeSpageState extends State<HomeSpage> {
                 children: [
                   Row(
                     children: [
-                      const Icon(
-                        Icons.account_circle,
-                        size: 72,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 20),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            'Bayu Saputra',
-                            style: TextStyle(fontSize: 20, color: Colors.white),
+                      _profile != null &&
+                              _profile!.profilePhoto != null &&
+                              _profile!.profilePhoto!.isNotEmpty
+                          ? ClipOval(
+                            child: Image(
+                              image:
+                                  base64ImageProvider(_profile!.profilePhoto!)!,
+                              width: 72,
+                              height: 72,
+                              fit: BoxFit.cover,
+                              errorBuilder:
+                                  (context, error, stackTrace) => Icon(
+                                    Icons.account_circle,
+                                    size: 72,
+                                    color: Colors.white,
+                                  ),
+                            ),
+                          )
+                          : const Icon(
+                            Icons.account_circle,
+                            size: 72,
+                            color: Colors.white,
                           ),
-                        ],
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child:
+                            _profile == null
+                                ? const SizedBox(
+                                  height: 40,
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                )
+                                : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _profile!.name,
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      _profile!.trainingTitle.isNotEmpty
+                                          ? _profile!.trainingTitle
+                                          : (_profile!.training != null
+                                              ? _profile!.training!.title
+                                              : '-'),
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.white70,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                       ),
                     ],
                   ),
@@ -226,9 +323,11 @@ class _HomeSpageState extends State<HomeSpage> {
                                           Column(
                                             children: [
                                               Text(
-                                                _getOnlyTime(
-                                                  _absenToday?.jamMasuk,
-                                                ),
+                                                isToday(_absenToday?.jamMasuk)
+                                                    ? _getOnlyTime(
+                                                      _absenToday?.jamMasuk,
+                                                    )
+                                                    : '-',
                                                 style: const TextStyle(
                                                   fontSize: 20,
                                                 ),
@@ -243,9 +342,11 @@ class _HomeSpageState extends State<HomeSpage> {
                                           Column(
                                             children: [
                                               Text(
-                                                _getOnlyTime(
-                                                  _absenToday?.jamKeluar,
-                                                ),
+                                                isToday(_absenToday?.jamKeluar)
+                                                    ? _getOnlyTime(
+                                                      _absenToday?.jamKeluar,
+                                                    )
+                                                    : '-',
                                                 style: const TextStyle(
                                                   fontSize: 20,
                                                 ),

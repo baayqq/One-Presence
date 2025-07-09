@@ -9,6 +9,7 @@ import 'package:onepresence/model/login_model.dart';
 import 'package:onepresence/model/login_error_model.dart';
 import 'package:onepresence/model/profile_model.dart';
 import 'package:onepresence/model/absen_stats_model.dart';
+import 'dart:io';
 
 class UserService {
   Future<Map<String, dynamic>> registUser(
@@ -107,6 +108,50 @@ class UserService {
       throw Exception(
         'Gagal mengambil data absen stats. [${response.statusCode}]',
       );
+    }
+  }
+
+  Future<EditProfileResponse> editProfile(
+    String token,
+    String name,
+    String email,
+  ) async {
+    final response = await http.put(
+      Uri.parse('https://appabsensi.mobileprojp.com/api/profile'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+      body: {'name': name, 'email': email},
+    );
+    if (response.statusCode == 200) {
+      return EditProfileResponse.fromJson(jsonDecode(response.body));
+    } else if (response.statusCode == 422) {
+      return EditProfileResponse.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Gagal update profil. [${response.statusCode}]');
+    }
+  }
+
+  Future<EditProfilePhotoResponse> editProfilePhoto(
+    String token,
+    String filePath,
+  ) async {
+    final bytes = await File(filePath).readAsBytes();
+    final base64Image = 'data:image/png;base64,' + base64Encode(bytes);
+    final uri = Uri.parse(
+      'https://appabsensi.mobileprojp.com/api/profile/photo',
+    );
+    final response = await http.put(
+      uri,
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'profile_photo': base64Image}),
+    );
+    if (response.statusCode == 200) {
+      return EditProfilePhotoResponse.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Gagal update foto profil. [${response.statusCode}]');
     }
   }
 }

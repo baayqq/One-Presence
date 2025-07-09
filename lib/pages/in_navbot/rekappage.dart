@@ -31,6 +31,7 @@ class _RekapAbsState extends State<RekapAbs> {
   }
 
   Future<void> _fetchAbsenHistory() async {
+    if (!mounted) return;
     setState(() {
       _loadingHistory = true;
       _historyError = null;
@@ -39,6 +40,7 @@ class _RekapAbsState extends State<RekapAbs> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
       if (token == null) {
+        if (!mounted) return;
         setState(() {
           _historyError = 'Token tidak ditemukan.';
           _loadingHistory = false;
@@ -46,11 +48,13 @@ class _RekapAbsState extends State<RekapAbs> {
         return;
       }
       final historyResponse = await fetchAbsenHistory(token);
+      if (!mounted) return;
       setState(() {
         _absenHistory = historyResponse.data;
         _loadingHistory = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _historyError = e.toString();
         _loadingHistory = false;

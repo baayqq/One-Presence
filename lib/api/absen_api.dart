@@ -20,7 +20,6 @@ Future<dynamic> absenCheckIn({
   required double lat,
   required double lng,
   required String address,
-  required String imagePath,
 }) async {
   final uri = Uri.parse(
     'https://appabsensi.mobileprojp.com/api/absen/check-in',
@@ -31,8 +30,6 @@ Future<dynamic> absenCheckIn({
         ..fields['check_in_lat'] = lat.toString()
         ..fields['check_in_lng'] = lng.toString()
         ..fields['check_in_address'] = address;
-
-  request.files.add(await http.MultipartFile.fromPath('photo', imagePath));
 
   final streamedResponse = await request.send();
   final response = await http.Response.fromStream(streamedResponse);

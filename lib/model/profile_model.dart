@@ -107,3 +107,61 @@ class Training {
     updatedAt: json['updated_at'],
   );
 }
+
+class EditProfileResponse {
+  final String message;
+  final EditProfileData? data;
+  final Map<String, dynamic>? errors;
+
+  EditProfileResponse({required this.message, this.data, this.errors});
+
+  factory EditProfileResponse.fromJson(
+    Map<String, dynamic> json,
+  ) => EditProfileResponse(
+    message: json['message'] ?? '',
+    data: json['data'] == null ? null : EditProfileData.fromJson(json['data']),
+    errors: json['errors'],
+  );
+}
+
+class EditProfileData {
+  final int id;
+  final String name;
+  final String email;
+  final String? emailVerifiedAt;
+  final String createdAt;
+  final String updatedAt;
+
+  EditProfileData({
+    required this.id,
+    required this.name,
+    required this.email,
+    this.emailVerifiedAt,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory EditProfileData.fromJson(Map<String, dynamic> json) =>
+      EditProfileData(
+        id: json['id'],
+        name: json['name'],
+        email: json['email'],
+        emailVerifiedAt: json['email_verified_at'],
+        createdAt: json['created_at'],
+        updatedAt: json['updated_at'],
+      );
+}
+
+class EditProfilePhotoResponse {
+  final String message;
+  final String? profilePhoto;
+
+  EditProfilePhotoResponse({required this.message, this.profilePhoto});
+
+  factory EditProfilePhotoResponse.fromJson(Map<String, dynamic> json) =>
+      EditProfilePhotoResponse(
+        message: json['message'] ?? '',
+        profilePhoto:
+            json['data'] != null ? json['data']['profile_photo'] : null,
+      );
+}
