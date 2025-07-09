@@ -5,6 +5,8 @@ import 'package:geocoding/geocoding.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:onepresence/api/absen_checkout_api.dart';
+import 'package:onepresence/model/absen_checkout_model.dart';
 
 class AbsensOut extends StatefulWidget {
   const AbsensOut({super.key});
@@ -28,6 +30,7 @@ class _AbsensOutState extends State<AbsensOut> {
     106.812942,
   ); // Ganti dengan lokasi kantor
   double _distance = 0.0;
+  bool _isSubmitting = false;
 
   Future<void> _getCurrentLocation() async {
     setState(() {
@@ -217,17 +220,53 @@ class _AbsensOutState extends State<AbsensOut> {
                           onPressed:
                               (!_checkedOut &&
                                       _imageFile != null &&
-                                      _distance <= _radius)
-                                  ? () {
+                                      _distance <= _radius &&
+                                      !_isSubmitting)
+                                  ? () async {
                                     setState(() {
-                                      _checkedOut = true;
+                                      _isSubmitting = true;
                                     });
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Check-out berhasil!'),
-                                        backgroundColor: Colors.green,
-                                      ),
-                                    );
+                                    try {
+                                      final prefs =
+                                          await SharedPreferences.getInstance();
+                                      final token = prefs.getString('token');
+                                      if (token == null) {
+                                        throw Exception(
+                                          'Token tidak ditemukan',
+                                        );
+                                      }
+                                      final response = await absenCheckOut(
+                                        token: token,
+                                        lat: _currentPosition.latitude,
+                                        lng: _currentPosition.longitude,
+                                        address: _currentAddress,
+                                        imagePath: _imageFile!.path,
+                                      );
+                                      setState(() {
+                                        _checkedOut = true;
+                                      });
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(response.message),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Gagal check-out: $e'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    } finally {
+                                      setState(() {
+                                        _isSubmitting = false;
+                                      });
+                                    }
                                   }
                                   : null,
                           style: ElevatedButton.styleFrom(
@@ -240,10 +279,23 @@ class _AbsensOutState extends State<AbsensOut> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Text(
-                            'Check out',
-                            style: TextStyle(fontSize: 18, color: Colors.white),
-                          ),
+                          child:
+                              _isSubmitting
+                                  ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : const Text(
+                                    'Check out',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                         ),
                         if (_imageFile == null || _distance > _radius)
                           Padding(

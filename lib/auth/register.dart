@@ -210,8 +210,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           value: selectedGender,
                           hint: const Text("Jenis Kelamin"),
                           items: const [
-                            DropdownMenuItem(value: "L", child: Text("L")),
-                            DropdownMenuItem(value: "P", child: Text("P")),
+                            DropdownMenuItem(value: "L", child: Text("Laki-laki")),
+                            DropdownMenuItem(value: "P", child: Text("Perempuan")),
                           ],
                           onChanged:
                               (value) => setState(() => selectedGender = value),
@@ -226,7 +226,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         DropdownButtonFormField<int>(
                           isExpanded: true,
                           value: selectedBatchId,
-                          hint: const Text("Batch ID"),
+                          hint: const Text("Batch"),
                           items:
                               isBatchLoading
                                   ? []
@@ -257,7 +257,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         DropdownButtonFormField<int>(
                           isExpanded: true,
                           value: selectedTrainingId,
-                          hint: const Text("Training ID"),
+                          hint: const Text("Kejuruan"),
                           items:
                               isTrainingLoading
                                   ? []
@@ -282,7 +282,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           validator:
                               (value) =>
                                   value == null
-                                      ? 'Training ID wajib dipilih'
+                                      ? 'Kejuruan ID wajib dipilih'
                                       : null,
                         ),
                         const SizedBox(height: 24),

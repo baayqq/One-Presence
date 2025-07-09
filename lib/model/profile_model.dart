@@ -28,8 +28,8 @@ class ProfileData {
     required this.email,
     required this.batchKe,
     required this.trainingTitle,
-    this.batch,
-    this.training,
+    required this.batch,
+    required this.training,
     required this.jenisKelamin,
     this.profilePhoto,
   });

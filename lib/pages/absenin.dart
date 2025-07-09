@@ -5,6 +5,9 @@ import 'package:geocoding/geocoding.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:onepresence/api/absen_status_api.dart';
+import 'package:onepresence/model/absen_status_model.dart';
+import 'package:onepresence/api/absen_api.dart';
 
 class Absens extends StatefulWidget {
   const Absens({super.key});
@@ -21,13 +24,15 @@ class _AbsensState extends State<Absens> {
   bool _loading = true;
   String? _userName;
   bool _checkedIn = false;
+  String? _absenStatusMessage;
   File? _imageFile;
-  final double _radius = 10.0; // meter
+  final double _radius = 1.0; // meter
   final LatLng _officeLocation = const LatLng(
     -6.210879,
     106.812942,
   ); // Ganti dengan lokasi kantor
   double _distance = 0.0;
+  bool _isSubmitting = false;
 
   Future<void> _getCurrentLocation() async {
     setState(() {
@@ -127,6 +132,33 @@ class _AbsensState extends State<Absens> {
     super.initState();
     _getCurrentLocation();
     _getUserName();
+    _checkAbsenStatus();
+  }
+
+  Future<void> _checkAbsenStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) return;
+    try {
+      final statusResponse = await fetchAbsenStatusToday(token);
+      if (!mounted) return;
+      if (statusResponse.message.contains('sudah melakukan absen')) {
+        setState(() {
+          _checkedIn = true;
+          _absenStatusMessage = statusResponse.message;
+        });
+      } else {
+        setState(() {
+          _checkedIn = false;
+          _absenStatusMessage = null;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _absenStatusMessage = 'Gagal cek status absen: $e';
+      });
+    }
   }
 
   @override
@@ -223,17 +255,75 @@ class _AbsensState extends State<Absens> {
                           onPressed:
                               (!_checkedIn &&
                                       _imageFile != null &&
-                                      _distance <= _radius)
-                                  ? () {
+                                      _distance <= _radius &&
+                                      !_isSubmitting)
+                                  ? () async {
+                                    if (!mounted) return;
                                     setState(() {
-                                      _checkedIn = true;
+                                      _isSubmitting = true;
                                     });
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Check-in berhasil!'),
-                                        backgroundColor: Colors.green,
-                                      ),
-                                    );
+                                    try {
+                                      final prefs =
+                                          await SharedPreferences.getInstance();
+                                      final token = prefs.getString('token');
+                                      if (token == null) {
+                                        throw Exception(
+                                          'Token tidak ditemukan',
+                                        );
+                                      }
+                                      final response = await absenCheckIn(
+                                        token: token,
+                                        lat: _currentPosition.latitude,
+                                        lng: _currentPosition.longitude,
+                                        address: _currentAddress,
+                                        imagePath: _imageFile!.path,
+                                      );
+                                      if (!mounted) return;
+                                      if (response.message.contains(
+                                        'sudah melakukan absen',
+                                      )) {
+                                        setState(() {
+                                          _checkedIn = true;
+                                        });
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(response.message),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      } else {
+                                        setState(() {
+                                          _checkedIn = true;
+                                        });
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(response.message),
+                                            backgroundColor: Colors.green,
+                                          ),
+                                        );
+                                      }
+                                      await _checkAbsenStatus(); // Tambahkan ini agar status UI update
+                                    } catch (e) {
+                                      if (!mounted) return;
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Gagal check-in: $e'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                      await _checkAbsenStatus(); // Tambahkan ini juga pada error
+                                    } finally {
+                                      if (!mounted) return;
+                                      setState(() {
+                                        _isSubmitting = false;
+                                      });
+                                    }
                                   }
                                   : null,
                           style: ElevatedButton.styleFrom(
@@ -246,11 +336,32 @@ class _AbsensState extends State<Absens> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Text(
-                            'Check in',
-                            style: TextStyle(fontSize: 18, color: Colors.white),
-                          ),
+                          child:
+                              _isSubmitting
+                                  ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : const Text(
+                                    'Check in',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                         ),
+                        if (_checkedIn && _absenStatusMessage != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              _absenStatusMessage!,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
                         if (_imageFile == null || _distance > _radius)
                           Padding(
                             padding: const EdgeInsets.only(top: 8.0),
