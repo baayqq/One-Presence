@@ -10,8 +10,8 @@ Future<AbsenCheckOutResponse> absenCheckOut({
   required String address,
 }) async {
   final now = DateTime.now();
-  final dateStr = DateFormat('yyyy-MM-dd').format(now);
-  final timeStr = DateFormat('HH:mm').format(now);
+  final dateStr = DateFormat('yyyy-MM-dd', 'id_ID').format(now);
+  final timeStr = DateFormat('HH:mm', 'id_ID').format(now);
   final locationStr = '$lat,$lng';
   final uri = Uri.parse(
     'https://appabsensi.mobileprojp.com/api/absen/check-out',

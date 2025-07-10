@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:onepresence/api/api_file.dart';
 import 'package:onepresence/model/profile_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:onepresence/pages/in_navbot/detailprofile.dart';
+import 'package:onepresence/pages/detailprofile.dart';
 import 'package:onepresence/auth/login.dart';
 import 'package:onepresence/pages/editprof.dart';
 import 'dart:convert';

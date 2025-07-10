@@ -4,7 +4,7 @@ import 'package:onepresence/model/model_absen.dart';
 import 'package:intl/intl.dart';
 
 Future<Absen> getAbsenToday(String token, DateTime attendanceDate) async {
-  final dateStr = DateFormat('yyyy-MM-dd').format(attendanceDate);
+  final dateStr = DateFormat('yyyy-MM-dd', 'id_ID').format(attendanceDate);
   final uri = Uri.parse(
     'https://appabsensi.mobileprojp.com/api/absen/today?attendance_date=$dateStr',
   );

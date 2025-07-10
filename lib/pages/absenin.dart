@@ -25,9 +25,7 @@ class _AbsensState extends State<Absens> {
   String _currentAddress = 'Memuat alamat...';
   Marker? _marker;
   bool _loading = true;
-  String? _userName;
   bool _checkedIn = false;
-  String? _absenStatusMessage;
   final double _radius = 1.0; // meter
   final LatLng _officeLocation = const LatLng(
     -6.210879,
@@ -121,20 +119,10 @@ class _AbsensState extends State<Absens> {
     }
   }
 
-  Future<void> _getUserName() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
-    setState(() {
-      _userName = prefs.getString('username') ?? 'User';
-    });
-  }
-
   @override
   void initState() {
     super.initState();
     _getCurrentLocation();
-    _getUserName();
-    _checkAbsenStatus();
   }
 
   @override
@@ -156,16 +144,13 @@ class _AbsensState extends State<Absens> {
             data.jamMasuk.isEmpty ||
             !isToday(data.jamMasuk)) {
           _checkedIn = false;
-          _absenStatusMessage = "Belum check-in";
         } else if (isToday(data.jamMasuk) &&
             (data.jamKeluar == null ||
                 data.jamKeluar.isEmpty ||
                 !isToday(data.jamKeluar))) {
           _checkedIn = true;
-          _absenStatusMessage = "Sudah check-in, belum check-out";
         } else if (isToday(data.jamKeluar)) {
           _checkedIn = true;
-          _absenStatusMessage = "Sudah check-out";
         }
       });
     } catch (e) {
@@ -174,55 +159,28 @@ class _AbsensState extends State<Absens> {
       )) {
         setState(() {
           _checkedIn = false;
-          _absenStatusMessage = "Belum check-in";
         });
       } else {
         setState(() {
-          _absenStatusMessage = 'Gagal cek status absen: $e';
+          // _absenStatusMessage = 'Gagal cek status absen: $e'; // Removed as per edit hint
         });
       }
-    }
-  }
-
-  Future<void> _checkAbsenStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-    if (token == null) return;
-    try {
-      final statusResponse = await fetchAbsenStatusToday(token);
-      if (!mounted) return;
-      if (statusResponse.message.contains('sudah melakukan absen')) {
-        setState(() {
-          _checkedIn = true;
-          _absenStatusMessage = statusResponse.message;
-        });
-      } else {
-        setState(() {
-          _checkedIn = false;
-          _absenStatusMessage = null;
-        });
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _absenStatusMessage = 'Gagal cek status absen: $e';
-      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(backgroundColor: Color(0xff468585)),
       body: Column(
         children: [
           // Google Map
           Padding(
-            padding: const EdgeInsets.only(top: 16, left: 12, right: 12),
+            padding: const EdgeInsets.all(4.0),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: SizedBox(
-                height: 300,
+                height: 550,
                 width: double.infinity,
                 child: GoogleMap(
                   initialCameraPosition: CameraPosition(
@@ -246,31 +204,19 @@ class _AbsensState extends State<Absens> {
               child: SingleChildScrollView(
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 30),
+                  padding: const EdgeInsets.symmetric(vertical: 65),
                   decoration: const BoxDecoration(
-                    color: Color(0xff468585),
+                    color: Color(0x9f468585),
                     // borderRadius: BorderRadius.only(
                     //   topLeft: Radius.circular(100),
                     //   topRight: Radius.circular(100),
                     // ),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(12.0),
+                    padding: const EdgeInsets.all(16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Nama: ${_userName ?? ''}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Status: ${_checkedIn ? 'Sudah check-in' : 'Belum check-in'}',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: _checkedIn ? Colors.green : Colors.red,
-                          ),
-                        ),
                         const SizedBox(height: 8),
                         Text(
                           'Radius lokasi: $_radius meter',
@@ -331,9 +277,7 @@ class _AbsensState extends State<Absens> {
                                           context,
                                         ).showSnackBar(
                                           SnackBar(
-                                            content: Text(
-                                              'Berhasil check-in',
-                                            ),
+                                            content: Text('Berhasil check-in'),
                                             backgroundColor: Colors.green,
                                           ),
                                         );
@@ -345,7 +289,7 @@ class _AbsensState extends State<Absens> {
                                           (route) => false,
                                         );
                                       }
-                                      await _checkAbsenStatus();
+                                      await _refreshAbsenStatus();
                                     } catch (e) {
                                       if (!mounted) return;
                                       ScaffoldMessenger.of(
@@ -356,7 +300,7 @@ class _AbsensState extends State<Absens> {
                                           backgroundColor: Colors.red,
                                         ),
                                       );
-                                      await _checkAbsenStatus();
+                                      await _refreshAbsenStatus();
                                     } finally {
                                       if (!mounted) return;
                                       setState(() {
@@ -393,12 +337,12 @@ class _AbsensState extends State<Absens> {
                                     ),
                                   ),
                         ),
-                        if (_checkedIn && _absenStatusMessage != null)
+                        if (_checkedIn)
                           Padding(
                             padding: const EdgeInsets.only(top: 8.0),
                             child: Text(
-                              _absenStatusMessage!,
-                              style: const TextStyle(color: Colors.red),
+                              'Sudah check-in',
+                              style: const TextStyle(color: Colors.green),
                             ),
                           ),
                         if (_distance > _radius)

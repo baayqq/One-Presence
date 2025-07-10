@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:onepresence/auth/login.dart';
 import 'package:onepresence/pages/navBott.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {

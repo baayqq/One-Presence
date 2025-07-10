@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:onepresence/api/api_file.dart';
+import 'package:onepresence/api/absen_stats_api.dart';
 import 'package:onepresence/model/absen_stats_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onepresence/api/absen_history_api.dart';
 import 'package:onepresence/model/absen_history_model.dart';
-import 'package:onepresence/api/absen_history_response_service.dart';
-import 'package:onepresence/model/absen_history_response_model.dart'
-    as absenresp;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 
 class RekapAbs extends StatefulWidget {
   const RekapAbs({super.key});
@@ -16,254 +14,239 @@ class RekapAbs extends StatefulWidget {
 }
 
 class _RekapAbsState extends State<RekapAbs> {
-  Future<AbsenStatsResponse> fetchStats() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
-    return UserService().getAbsenStats(token);
-  }
-
-  absenresp.AbsenHistoryResponse? _historyResponse;
-  bool _loadingHistory = true;
-  String? _historyError;
   DateTime? _selectedDate;
+  Future<AbsenStatsResponse>? _statsFuture;
+  Future<AbsenHistoryResponse>? _historyFuture;
 
   @override
   void initState() {
     super.initState();
-    _fetchAbsenHistory();
+    _loadData();
   }
 
-  Future<void> _fetchAbsenHistory() async {
-    if (!mounted) return;
+  void _loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
     setState(() {
-      _loadingHistory = true;
-      _historyError = null;
+      _statsFuture = fetchAbsenStats(token);
+      _historyFuture = fetchAbsenHistoryNew(token);
     });
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-      if (token == null) {
-        if (!mounted) return;
-        setState(() {
-          _historyError = 'Token tidak ditemukan.';
-          _loadingHistory = false;
-        });
-        return;
-      }
-      final historyResponse = await getAbsenHistoryResponse(
-        token,
-        date: _selectedDate,
-      );
-      if (!mounted) return;
+  }
+
+  void _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      locale: const Locale('id', 'ID'),
+    );
+    if (picked != null) {
       setState(() {
-        _historyResponse = historyResponse;
-        _loadingHistory = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _historyError = e.toString();
-        _loadingHistory = false;
+        _selectedDate = picked;
       });
     }
   }
 
-  List<absenresp.AbsenHistoryItem> get _filteredHistory {
-    if (_historyResponse == null) return [];
-    return _historyResponse!.data;
-  }
-
-  String _selectedDateStr() {
-    if (_selectedDate == null) return '';
-    return '${_selectedDate!.year.toString().padLeft(4, '0')}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}';
-  }
-
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<AbsenStatsResponse>(
-      future: fetchStats(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Gagal memuat data: ${snapshot.error}'));
-        } else if (snapshot.hasData && snapshot.data!.data != null) {
-          final stats = snapshot.data!.data!;
-          return Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 32),
-                const Text(
-                  'Rekapitulasi Kehadiran',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 24),
-                _buildStatRow('Total Hadir', stats.totalHadir, Colors.green),
-                const SizedBox(height: 16),
-                _buildStatRow('Total Izin', stats.totalIzin, Colors.blue),
-                const SizedBox(height: 16),
-                _buildStatRow('Total Alpha', stats.totalAlpha, Colors.red),
-                const SizedBox(height: 16),
-                _buildStatRow('Total Telat', stats.totalTelat, Colors.orange),
-                const SizedBox(height: 32),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        icon: const Icon(Icons.date_range),
-                        label: Text(
-                          _selectedDate == null
-                              ? 'Pilih Tanggal'
-                              : _selectedDateStr(),
-                        ),
-                        onPressed: () async {
-                          final picked = await showDatePicker(
-                            context: context,
-                            initialDate: _selectedDate ?? DateTime.now(),
-                            firstDate: DateTime(2020),
-                            lastDate: DateTime.now().add(
-                              const Duration(days: 365),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FutureBuilder<AbsenStatsResponse>(
+            future: _statsFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Text('Gagal memuat statistik: ${snapshot.error}');
+              } else if (snapshot.hasData) {
+                final stats = snapshot.data!.data;
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _statBox('Total Absen', stats.totalAbsen),
+                        _statBox('Masuk', stats.totalMasuk),
+                        _statBox('Izin', stats.totalIzin),
+                        Column(
+                          children: [
+                            const Text(
+                              'Hari Ini',
+                              style: TextStyle(fontSize: 12),
                             ),
-                          );
-                          if (picked != null) {
-                            setState(() {
-                              _selectedDate = picked;
-                            });
-                            await _fetchAbsenHistory();
-                          }
-                        },
-                      ),
+                            Icon(
+                              stats.sudahAbsenHariIni
+                                  ? Icons.check_circle
+                                  : Icons.cancel,
+                              color:
+                                  stats.sudahAbsenHariIni
+                                      ? Colors.green
+                                      : Colors.red,
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    if (_selectedDate != null)
-                      IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () async {
-                          setState(() {
-                            _selectedDate = null;
-                          });
-                          await _fetchAbsenHistory();
-                        },
-                      ),
-                  ],
+                  ),
+                );
+              } else {
+                return const SizedBox();
+              }
+            },
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'History Absensi',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.date_range),
+                label: Text(
+                  _selectedDate == null
+                      ? 'Pilih Tanggal'
+                      : DateFormat(
+                        'dd MMM yyyy',
+                        'id_ID',
+                      ).format(_selectedDate!),
                 ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child:
-                      _loadingHistory
-                          ? const Center(child: CircularProgressIndicator())
-                          : _historyError != null
-                          ? Center(
-                            child: Text('Gagal memuat riwayat: $_historyError'),
-                          )
-                          : _filteredHistory.isEmpty
-                          ? const Center(
-                            child: Text('Tidak ada absen pada tanggal ini.'),
-                          )
-                          : ListView.builder(
-                            itemCount: _filteredHistory.length,
-                            itemBuilder: (context, index) {
-                              final absen = _filteredHistory[index];
-                              final tgl =
-                                  absen.attendanceDate.length >= 10
-                                      ? absen.attendanceDate.substring(8, 10)
-                                      : '';
-                              final bulan =
-                                  absen.attendanceDate.length >= 7
-                                      ? absen.attendanceDate.substring(5, 7)
-                                      : '';
-                              final namaBulan = _getNamaBulan(bulan);
-                              final jamMasuk = absen.checkInTime;
-                              final jamKeluar = absen.checkOutTime;
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
+                onPressed: _pickDate,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: FutureBuilder<AbsenHistoryResponse>(
+              future: _historyFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text('Gagal memuat history: ${snapshot.error}'),
+                  );
+                } else if (snapshot.hasData) {
+                  List<AbsenHistoryItem> data = snapshot.data!.data;
+                  if (_selectedDate != null) {
+                    final filterStr = DateFormat(
+                      'yyyy-MM-dd',
+                    ).format(_selectedDate!);
+                    data =
+                        data
+                            .where((e) => e.attendanceDate == filterStr)
+                            .toList();
+                  }
+                  if (data.isEmpty) {
+                    return const Center(child: Text('-'));
+                  }
+                  return ListView.builder(
+                    itemCount: data.length,
+                    itemBuilder: (context, idx) {
+                      final absen = data[idx];
+                      final tgl =
+                          absen.attendanceDate.length >= 10
+                              ? absen.attendanceDate.substring(8, 10)
+                              : '-';
+                      final bulan =
+                          absen.attendanceDate.length >= 7
+                              ? absen.attendanceDate.substring(5, 7)
+                              : '-';
+                      final namaBulan = _getNamaBulan(bulan);
+                      final jamMasuk = absen.checkInTime ?? '-';
+                      final jamKeluar = absen.checkOutTime ?? '-';
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        child: ListTile(
+                          leading: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                tgl,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
                                 ),
-                                child: Container(
-                                  height: 90,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0x8f9CDBA6),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(12.0),
-                                        child: Container(
-                                          width: 80,
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                            color: const Color(0xffDEF9C4),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              '$tgl\n$namaBulan',
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 18),
-                                      Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          const Text('Check In'),
-                                          Text(jamMasuk),
-                                        ],
-                                      ),
-                                      const SizedBox(width: 32),
-                                      Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          const Text('Check Out'),
-                                          Text(jamKeluar),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
+                              ),
+                              Text(
+                                namaBulan,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ],
                           ),
-                ),
-              ],
+                          title: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Check in',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  Text(
+                                    jamMasuk,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Check out',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  Text(
+                                    jamKeluar,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          subtitle:
+                              absen.status == 'izin' && absen.alasanIzin != null
+                                  ? Text(
+                                    'Izin: ${absen.alasanIzin!}',
+                                    style: const TextStyle(
+                                      color: Colors.orange,
+                                    ),
+                                  )
+                                  : null,
+                        ),
+                      );
+                    },
+                  );
+                } else {
+                  return const SizedBox();
+                }
+              },
             ),
-          );
-        } else {
-          return const Center(child: Text('Data tidak ditemukan.'));
-        }
-      },
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildStatRow(String label, int value, Color color) {
-    return Row(
+  Widget _statBox(String label, int value) {
+    return Column(
       children: [
-        Expanded(child: Text(label, style: const TextStyle(fontSize: 18))),
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            value.toString(),
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
+        Text(
+          value.toString(),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
+        Text(label, style: const TextStyle(fontSize: 12)),
       ],
     );
   }

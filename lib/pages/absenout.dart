@@ -25,8 +25,6 @@ class _AbsensOutState extends State<AbsensOut> {
   String _currentAddress = 'Memuat alamat...';
   Marker? _marker;
   bool _loading = true;
-  String? _userName;
-  bool _checkedOut = false;
   final double _radius = 10.0; // meter
   final LatLng _officeLocation = const LatLng(
     -6.210879,
@@ -120,58 +118,30 @@ class _AbsensOutState extends State<AbsensOut> {
     }
   }
 
-  Future<void> _getUserName() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
-    setState(() {
-      _userName = prefs.getString('username') ?? 'User';
-    });
-  }
-
   @override
   void initState() {
     super.initState();
     _getCurrentLocation();
-    _getUserName();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _refreshAbsenStatus();
-  }
-
-  Future<void> _refreshAbsenStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-    if (token == null) return;
-    final response = await fetchAbsenToday(token);
-    final data = response.data;
-    setState(() {
-      if (data == null ||
-          data.jamKeluar == null ||
-          data.jamKeluar.isEmpty ||
-          !isToday(data.jamKeluar)) {
-        _checkedOut = false;
-      } else if (isToday(data.jamKeluar)) {
-        _checkedOut = true;
-      }
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(backgroundColor: Color(0xff468585)),
       body: Column(
         children: [
           // Google Map
           Padding(
-            padding: const EdgeInsets.only(top: 16, left: 12, right: 12),
+            padding: const EdgeInsets.all(4.0),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: SizedBox(
-                height: 300,
+                height: 550,
                 width: double.infinity,
                 child: GoogleMap(
                   initialCameraPosition: CameraPosition(
@@ -195,25 +165,13 @@ class _AbsensOutState extends State<AbsensOut> {
               child: SingleChildScrollView(
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 30),
-                  decoration: const BoxDecoration(color: Color(0xff468585)),
+                  padding: const EdgeInsets.symmetric(vertical: 65),
+                  decoration: const BoxDecoration(color: Color(0x9f468585)),
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Nama: ${_userName ?? ''}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Status: ${_checkedOut ? 'Sudah check-out' : 'Belum check-out'}',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: _checkedOut ? Colors.green : Colors.red,
-                          ),
-                        ),
                         const SizedBox(height: 8),
                         Text(
                           'Radius lokasi: $_radius meter',
@@ -227,9 +185,7 @@ class _AbsensOutState extends State<AbsensOut> {
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed:
-                              (!_checkedOut &&
-                                      _distance <= _radius &&
-                                      !_isSubmitting)
+                              (!_isSubmitting)
                                   ? () async {
                                     setState(() {
                                       _isSubmitting = true;
@@ -249,16 +205,12 @@ class _AbsensOutState extends State<AbsensOut> {
                                         lng: _currentPosition.longitude,
                                         address: _currentAddress,
                                       );
-                                      setState(() {
-                                        _checkedOut = true;
-                                      });
+                                      setState(() {});
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
                                         SnackBar(
-                                          content: Text(
-                                            'Berhasil check-out',
-                                          ),
+                                          content: Text('Berhasil check-out'),
                                           backgroundColor: Colors.green,
                                         ),
                                       );

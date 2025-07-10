@@ -8,7 +8,6 @@ import 'package:onepresence/model/batch_model.dart' as batchModel;
 import 'package:onepresence/model/login_model.dart';
 import 'package:onepresence/model/login_error_model.dart';
 import 'package:onepresence/model/profile_model.dart';
-import 'package:onepresence/model/absen_stats_model.dart';
 import 'dart:io';
 
 class UserService {
@@ -94,20 +93,6 @@ class UserService {
       return ProfileResponse.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Gagal mengambil data profil. [${response.statusCode}]');
-    }
-  }
-
-  Future<AbsenStatsResponse> getAbsenStats(String token) async {
-    final response = await http.get(
-      Uri.parse('https://appabsensi.mobileprojp.com/api/absen/stats'),
-      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
-    );
-    if (response.statusCode == 200) {
-      return AbsenStatsResponse.fromJson(jsonDecode(response.body));
-    } else {
-      throw Exception(
-        'Gagal mengambil data absen stats. [${response.statusCode}]',
-      );
     }
   }
 

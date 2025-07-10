@@ -14,7 +14,6 @@ import 'package:onepresence/model/profile_model.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:onepresence/api/absen_api.dart';
-import 'package:onepresence/api/absen_history_response_service.dart';
 import 'package:onepresence/model/absen_history_response_model.dart'
     as absenresp;
 import 'package:onepresence/api/absen_today_service.dart';
@@ -33,11 +32,14 @@ class _HomeSpageState extends State<HomeSpage> {
   Absen? _absenToday;
   bool _loadingAbsenToday = true;
   String? _absenTodayError;
-  List<AbsenHistoryData> _absenHistory = [];
+  List<AbsenHistoryItem> _absenHistory = [];
   absenresp.AbsenHistoryResponse? _historyResponse;
   bool _loadingHistory = true;
   String? _historyError;
   ProfileData? _profile;
+  List<AbsenHistoryItem> _last7History = [];
+  bool _loading7History = true;
+  String? _history7Error;
 
   @override
   void initState() {
@@ -45,19 +47,21 @@ class _HomeSpageState extends State<HomeSpage> {
     _startClock();
     _fetchAbsenToday();
     _fetchAbsenHistory();
+    _fetchAbsen7History();
   }
 
   void _startClock() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) async {
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       setState(() {
         _now = DateTime.now();
       });
-      await _refreshProfile();
+      _refreshProfileIfMounted(); // panggil tanpa await, agar tidak menunggu async di timer
     });
   }
 
-  Future<void> _refreshProfile() async {
+  void _refreshProfileIfMounted() async {
+    if (!mounted) return;
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
     final profileResponse = await UserService().getProfile(token);
@@ -111,16 +115,45 @@ class _HomeSpageState extends State<HomeSpage> {
         });
         return;
       }
-      final historyResponse = await getAbsenHistoryResponse(token);
+      final historyResponse = await fetchAbsenHistory(token);
       setState(() {
-        _historyResponse = historyResponse;
+        _absenHistory = historyResponse.data;
         _loadingHistory = false;
       });
-      print('History response: ${_historyResponse?.data}');
     } catch (e) {
       setState(() {
         _historyError = e.toString();
         _loadingHistory = false;
+      });
+    }
+  }
+
+  Future<void> _fetchAbsen7History() async {
+    setState(() {
+      _loading7History = true;
+      _history7Error = null;
+    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      if (token == null) {
+        setState(() {
+          _history7Error = 'Token tidak ditemukan.';
+          _loading7History = false;
+        });
+        return;
+      }
+      final response = await fetchAbsenHistoryNew(token);
+      final all = response.data;
+      all.sort((a, b) => b.attendanceDate.compareTo(a.attendanceDate));
+      setState(() {
+        _last7History = all.take(7).toList();
+        _loading7History = false;
+      });
+    } catch (e) {
+      setState(() {
+        _history7Error = e.toString();
+        _loading7History = false;
       });
     }
   }
@@ -182,12 +215,13 @@ class _HomeSpageState extends State<HomeSpage> {
 
   @override
   Widget build(BuildContext context) {
-    final timeNow = DateFormat('hh:mm:ss a').format(_now);
-    final dateNow = DateFormat('EEE, dd MMMM yyyy', 'en_US').format(_now);
+    final timeNow = DateFormat('HH:mm:ss', 'id_ID').format(_now);
+    final dateNow = DateFormat('EEE, dd MMMM yyyy', 'id_ID').format(_now);
 
     return Scaffold(
       body: Column(
         children: [
+          // Header dan live attendance
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 30),
@@ -466,124 +500,142 @@ class _HomeSpageState extends State<HomeSpage> {
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 20),
                 ],
               ),
             ),
           ),
-
           const SizedBox(height: 20),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(12.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'History Absensi',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  'Absensi 7 Hari',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AbsensiHistoryPage(),
-                      ),
-                    );
-                  },
-                  child: Icon(Icons.history, color: Colors.teal),
-                ),
+                // GestureDetector(
+                //   onTap: () {
+                //     Navigator.push(
+                //       context,
+                //       MaterialPageRoute(
+                //         builder: (context) => DetailAbs(),
+                //       ),
+                //     );
+                //   },
+                //   child: Icon(Icons.history),
+                // ),
               ],
             ),
           ),
-
-          // ===== List absensi scrollable =====
+          // Hanya bagian history yang scrollable
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child:
-                  _loadingHistory
-                      ? const Center(child: CircularProgressIndicator())
-                      : _historyError != null
-                      ? Center(
-                        child: Text('Gagal memuat riwayat: $_historyError'),
-                      )
-                      : _last7DaysHistory.isEmpty
-                      ? const Center(child: Text('Belum ada riwayat absensi'))
-                      : ListView.builder(
-                        padding: const EdgeInsets.only(bottom: 20),
-                        itemCount: _last7DaysHistory.length,
-                        itemBuilder: (context, index) {
-                          final absen = _last7DaysHistory[index];
-                          final tgl =
-                              absen.attendanceDate.length >= 10
-                                  ? absen.attendanceDate.substring(8, 10)
-                                  : '';
-                          final bulan =
-                              absen.attendanceDate.length >= 7
-                                  ? absen.attendanceDate.substring(5, 7)
-                                  : '';
-                          final namaBulan = _getNamaBulan(bulan);
-                          final jamMasuk = absen.checkInTime;
-                          final jamKeluar = absen.checkOutTime;
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            child: Container(
-                              height: 100,
-                              decoration: BoxDecoration(
-                                color: const Color(0x8f9CDBA6),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(12.0),
-                                    child: Container(
-                                      width: 100,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(8),
-                                        color: const Color(0xffDEF9C4),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          '$tgl\n$namaBulan',
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
+            child:
+                _loading7History
+                    ? const Center(child: CircularProgressIndicator())
+                    : _history7Error != null
+                    ? Center(child: Text('Gagal memuat data:  _history7Error'))
+                    : _last7History.isEmpty
+                    ? const Center(
+                      child: Text('-', style: TextStyle(fontSize: 18)),
+                    )
+                    : ListView.builder(
+                      itemCount: _last7History.length,
+                      physics: const BouncingScrollPhysics(),
+                      itemBuilder: (context, idx) {
+                        final absen = _last7History[idx];
+                        final tgl =
+                            absen.attendanceDate.length >= 10
+                                ? absen.attendanceDate.substring(8, 10)
+                                : '-';
+                        final bulan =
+                            absen.attendanceDate.length >= 7
+                                ? absen.attendanceDate.substring(5, 7)
+                                : '-';
+                        final namaBulan = _getNamaBulan(bulan);
+                        final jamMasuk = absen.checkInTime ?? '-';
+                        final jamKeluar = absen.checkOutTime ?? '-';
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 8.0,
+                            horizontal: 16,
+                          ),
+                          child: Container(
+                            width: double.infinity,
+                            height: 72,
+                            decoration: BoxDecoration(
+                              color: Color(0x9f468585),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Container(
+                                    width: 50,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            tgl,
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
+                                          Text(
+                                            namaBulan,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 28),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Text('Check In'),
-                                      Text(jamMasuk),
-                                    ],
-                                  ),
-                                  const SizedBox(width: 52),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Text('Check Out'),
-                                      Text(jamKeluar),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                ),
+                                SizedBox(width: 24),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [Text(jamMasuk), Text('Check in')],
+                                ),
+                                SizedBox(width: 24),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(jamKeluar),
+                                    Text('Check out'),
+                                  ],
+                                ),
+                              ],
                             ),
-                          );
-                        },
-                      ),
-            ),
+                          ),
+                        );
+                      },
+                    ),
           ),
         ],
       ),
     );
+  }
+
+  String _getOnlyTime(String? dateTimeStr) {
+    if (dateTimeStr == null || dateTimeStr.isEmpty) return '-';
+    try {
+      final dt = DateTime.parse(dateTimeStr.replaceFirst(' ', 'T'));
+      return DateFormat('HH:mm:ss', 'id_ID').format(dt);
+    } catch (_) {
+      return dateTimeStr.length >= 8
+          ? dateTimeStr.substring(dateTimeStr.length - 8)
+          : dateTimeStr;
+    }
   }
 
   String _getNamaBulan(String bulan) {
@@ -614,18 +666,6 @@ class _HomeSpageState extends State<HomeSpage> {
         return 'Des';
       default:
         return '';
-    }
-  }
-
-  String _getOnlyTime(String? dateTimeStr) {
-    if (dateTimeStr == null || dateTimeStr.isEmpty) return '-';
-    try {
-      final dt = DateTime.parse(dateTimeStr.replaceFirst(' ', 'T'));
-      return DateFormat('HH:mm:ss').format(dt);
-    } catch (_) {
-      return dateTimeStr.length >= 8
-          ? dateTimeStr.substring(dateTimeStr.length - 8)
-          : dateTimeStr;
     }
   }
 }

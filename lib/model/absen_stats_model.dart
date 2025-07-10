@@ -1,34 +1,36 @@
 class AbsenStatsResponse {
   final String message;
-  final AbsenStatsData? data;
+  final AbsenStatsData data;
 
-  AbsenStatsResponse({required this.message, this.data});
+  AbsenStatsResponse({required this.message, required this.data});
 
-  factory AbsenStatsResponse.fromJson(Map<String, dynamic> json) =>
-      AbsenStatsResponse(
-        message: json['message'] ?? '',
-        data:
-            json['data'] == null ? null : AbsenStatsData.fromJson(json['data']),
-      );
+  factory AbsenStatsResponse.fromJson(Map<String, dynamic> json) {
+    return AbsenStatsResponse(
+      message: json['message'] ?? '',
+      data: AbsenStatsData.fromJson(json['data'] ?? {}),
+    );
+  }
 }
 
 class AbsenStatsData {
-  final int totalHadir;
+  final int totalAbsen;
+  final int totalMasuk;
   final int totalIzin;
-  final int totalAlpha;
-  final int totalTelat;
+  final bool sudahAbsenHariIni;
 
   AbsenStatsData({
-    required this.totalHadir,
+    required this.totalAbsen,
+    required this.totalMasuk,
     required this.totalIzin,
-    required this.totalAlpha,
-    required this.totalTelat,
+    required this.sudahAbsenHariIni,
   });
 
-  factory AbsenStatsData.fromJson(Map<String, dynamic> json) => AbsenStatsData(
-    totalHadir: json['total_hadir'] ?? 0,
-    totalIzin: json['total_izin'] ?? 0,
-    totalAlpha: json['total_alpha'] ?? 0,
-    totalTelat: json['total_telat'] ?? 0,
-  );
+  factory AbsenStatsData.fromJson(Map<String, dynamic> json) {
+    return AbsenStatsData(
+      totalAbsen: json['total_absen'] ?? 0,
+      totalMasuk: json['total_masuk'] ?? 0,
+      totalIzin: json['total_izin'] ?? 0,
+      sudahAbsenHariIni: json['sudah_absen_hari_ini'] ?? false,
+    );
+  }
 }
