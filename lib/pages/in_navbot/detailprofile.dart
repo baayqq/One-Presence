@@ -171,22 +171,52 @@ class _DetailProfileState extends State<DetailProfile> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Deskripsi: ${detail.description}',
+                                'ID: ${detail.id}',
                                 style: const TextStyle(fontSize: 16),
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Tanggal: ${detail.startDate} s/d ${detail.endDate}',
+                                'Judul: ${detail.title}',
                                 style: const TextStyle(fontSize: 16),
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Lokasi: ${detail.location}',
+                                'Deskripsi: ${detail.description ?? '-'}',
                                 style: const TextStyle(fontSize: 16),
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Mentor: ${detail.mentor}',
+                                'Jumlah Peserta: ${detail.participantCount?.toString() ?? '-'}',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Standar: ${detail.standard ?? '-'}',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Durasi: ${detail.duration ?? '-'}',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Dibuat: ${detail.createdAt ?? '-'}',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Diupdate: ${detail.updatedAt ?? '-'}',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Units: ${(detail.units != null && detail.units!.isNotEmpty) ? detail.units!.length.toString() + ' item' : '-'}',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Activities: ${(detail.activities != null && detail.activities!.isNotEmpty) ? detail.activities!.length.toString() + ' item' : '-'}',
                                 style: const TextStyle(fontSize: 16),
                               ),
                             ],

@@ -18,20 +18,26 @@ class TrainingDetailResponse {
 class TrainingDetailData {
   final int id;
   final String title;
-  final String description;
-  final String startDate;
-  final String endDate;
-  final String location;
-  final String mentor;
+  final String? description;
+  final int? participantCount;
+  final String? standard;
+  final String? duration;
+  final String? createdAt;
+  final String? updatedAt;
+  final List<dynamic>? units;
+  final List<dynamic>? activities;
 
   TrainingDetailData({
     required this.id,
     required this.title,
-    required this.description,
-    required this.startDate,
-    required this.endDate,
-    required this.location,
-    required this.mentor,
+    this.description,
+    this.participantCount,
+    this.standard,
+    this.duration,
+    this.createdAt,
+    this.updatedAt,
+    this.units,
+    this.activities,
   });
 
   factory TrainingDetailData.fromJson(Map<String, dynamic> json) {
@@ -39,10 +45,13 @@ class TrainingDetailData {
       id: json['id'],
       title: json['title'],
       description: json['description'],
-      startDate: json['start_date'],
-      endDate: json['end_date'],
-      location: json['location'],
-      mentor: json['mentor'],
+      participantCount: json['participant_count'],
+      standard: json['standard'],
+      duration: json['duration'],
+      createdAt: json['created_at'],
+      updatedAt: json['updated_at'],
+      units: json['units'],
+      activities: json['activities'],
     );
   }
 }
