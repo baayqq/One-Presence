@@ -155,3 +155,6 @@ class UserService {
     }
   }
 }
+
+String baseUrl = 'https://appabsensi.mobileprojp.com/api';
+String trainingDetailUrl(int id) => '$baseUrl/trainings/$id';

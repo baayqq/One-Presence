@@ -100,7 +100,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Nama: ${profile.name}',
+                                ' ${profile.name}',
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -109,7 +109,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Email: ${profile.email}',
+                                ' ${profile.email}',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.white,
@@ -117,7 +117,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Kelas: ${profile.trainingTitle}',
+                                ' ${profile.trainingTitle}',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.white,

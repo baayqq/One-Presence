@@ -13,6 +13,12 @@ import 'package:onepresence/api/api_file.dart';
 import 'package:onepresence/model/profile_model.dart';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:onepresence/api/absen_api.dart';
+import 'package:onepresence/api/absen_history_response_service.dart';
+import 'package:onepresence/model/absen_history_response_model.dart'
+    as absenresp;
+import 'package:onepresence/api/absen_today_service.dart';
+import 'package:onepresence/model/model_absen.dart';
 
 class HomeSpage extends StatefulWidget {
   const HomeSpage({super.key});
@@ -24,10 +30,11 @@ class HomeSpage extends StatefulWidget {
 class _HomeSpageState extends State<HomeSpage> {
   late Timer _timer;
   DateTime _now = DateTime.now();
-  AbsenTodayData? _absenToday;
+  Absen? _absenToday;
   bool _loadingAbsenToday = true;
   String? _absenTodayError;
   List<AbsenHistoryData> _absenHistory = [];
+  absenresp.AbsenHistoryResponse? _historyResponse;
   bool _loadingHistory = true;
   String? _historyError;
   ProfileData? _profile;
@@ -75,11 +82,12 @@ class _HomeSpageState extends State<HomeSpage> {
         });
         return;
       }
-      final absenTodayResponse = await fetchAbsenToday(token);
+      final absenTodayResponse = await getAbsenToday(token, DateTime.now());
       setState(() {
-        _absenToday = absenTodayResponse.data;
+        _absenToday = absenTodayResponse;
         _loadingAbsenToday = false;
       });
+      print('Absen today: ${_absenToday?.data?.checkInTime}');
     } catch (e) {
       setState(() {
         _absenTodayError = e.toString();
@@ -103,17 +111,29 @@ class _HomeSpageState extends State<HomeSpage> {
         });
         return;
       }
-      final historyResponse = await fetchAbsenHistory(token);
+      final historyResponse = await getAbsenHistoryResponse(token);
       setState(() {
-        _absenHistory = historyResponse.data;
+        _historyResponse = historyResponse;
         _loadingHistory = false;
       });
+      print('History response: ${_historyResponse?.data}');
     } catch (e) {
       setState(() {
         _historyError = e.toString();
         _loadingHistory = false;
       });
     }
+  }
+
+  List<absenresp.AbsenHistoryItem> get _last7DaysHistory {
+    if (_historyResponse == null) return [];
+    final now = DateTime.now();
+    final sevenDaysAgo = now.subtract(const Duration(days: 6));
+    return _historyResponse!.data.where((item) {
+      final date = DateTime.tryParse(item.attendanceDate);
+      if (date == null) return false;
+      return !date.isBefore(sevenDaysAgo) && !date.isAfter(now);
+    }).toList();
   }
 
   Future<ProfileData?> _fetchProfile() async {
@@ -300,7 +320,8 @@ class _HomeSpageState extends State<HomeSpage> {
                                   ? const Center(
                                     child: CircularProgressIndicator(),
                                   )
-                                  : _absenTodayError != null
+                                  : (_absenTodayError != null &&
+                                      _absenToday != null)
                                   ? Center(
                                     child: Text(
                                       'Gagal memuat absen: $_absenTodayError',
@@ -323,11 +344,20 @@ class _HomeSpageState extends State<HomeSpage> {
                                           Column(
                                             children: [
                                               Text(
-                                                isToday(_absenToday?.jamMasuk)
-                                                    ? _getOnlyTime(
-                                                      _absenToday?.jamMasuk,
-                                                    )
-                                                    : '-',
+                                                (_absenToday
+                                                                ?.data
+                                                                ?.checkInTime ==
+                                                            null ||
+                                                        _absenToday
+                                                                ?.data
+                                                                ?.checkInTime ==
+                                                            '')
+                                                    ? '-'
+                                                    : _getOnlyTime(
+                                                      _absenToday!
+                                                          .data!
+                                                          .checkInTime,
+                                                    ),
                                                 style: const TextStyle(
                                                   fontSize: 20,
                                                 ),
@@ -342,11 +372,20 @@ class _HomeSpageState extends State<HomeSpage> {
                                           Column(
                                             children: [
                                               Text(
-                                                isToday(_absenToday?.jamKeluar)
-                                                    ? _getOnlyTime(
-                                                      _absenToday?.jamKeluar,
-                                                    )
-                                                    : '-',
+                                                (_absenToday
+                                                                ?.data
+                                                                ?.checkOutTime ==
+                                                            null ||
+                                                        _absenToday
+                                                                ?.data
+                                                                ?.checkOutTime ==
+                                                            '')
+                                                    ? '-'
+                                                    : _getOnlyTime(
+                                                      _absenToday!
+                                                          .data!
+                                                          .checkOutTime,
+                                                    ),
                                                 style: const TextStyle(
                                                   fontSize: 20,
                                                 ),
@@ -470,33 +509,24 @@ class _HomeSpageState extends State<HomeSpage> {
                       ? Center(
                         child: Text('Gagal memuat riwayat: $_historyError'),
                       )
-                      : _absenHistory.isEmpty
+                      : _last7DaysHistory.isEmpty
                       ? const Center(child: Text('Belum ada riwayat absensi'))
                       : ListView.builder(
                         padding: const EdgeInsets.only(bottom: 20),
-                        itemCount: _absenHistory.length,
+                        itemCount: _last7DaysHistory.length,
                         itemBuilder: (context, index) {
-                          final absen = _absenHistory[index];
-                          // Format tanggal: 13\nJuli
+                          final absen = _last7DaysHistory[index];
                           final tgl =
-                              absen.checkIn.length >= 10
-                                  ? absen.checkIn.substring(8, 10)
+                              absen.attendanceDate.length >= 10
+                                  ? absen.attendanceDate.substring(8, 10)
                                   : '';
                           final bulan =
-                              absen.checkIn.length >= 7
-                                  ? absen.checkIn.substring(5, 7)
+                              absen.attendanceDate.length >= 7
+                                  ? absen.attendanceDate.substring(5, 7)
                                   : '';
                           final namaBulan = _getNamaBulan(bulan);
-                          // Format jam
-                          final jamMasuk =
-                              absen.checkIn.length >= 19
-                                  ? absen.checkIn.substring(11, 19)
-                                  : '-';
-                          final jamKeluar =
-                              absen.checkOut != null &&
-                                      absen.checkOut!.length >= 19
-                                  ? absen.checkOut!.substring(11, 19)
-                                  : '-';
+                          final jamMasuk = absen.checkInTime;
+                          final jamKeluar = absen.checkOutTime;
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             child: Container(

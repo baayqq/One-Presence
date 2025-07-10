@@ -6,10 +6,11 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onepresence/api/absen_checkout_api.dart';
-import 'package:onepresence/model/absen_checkout_model.dart';
+import 'package:onepresence/model/absen_checkout_response_model.dart';
 import 'package:onepresence/pages/in_navbot/home_page.dart';
 import 'package:onepresence/pages/navBott.dart';
 import 'package:onepresence/api/absen_api.dart';
+import 'package:onepresence/model/absen_checkout_response_model.dart';
 
 class AbsensOut extends StatefulWidget {
   const AbsensOut({super.key});
@@ -255,7 +256,9 @@ class _AbsensOutState extends State<AbsensOut> {
                                         context,
                                       ).showSnackBar(
                                         SnackBar(
-                                          content: Text(response.message),
+                                          content: Text(
+                                            'Berhasil check-out',
+                                          ),
                                           backgroundColor: Colors.green,
                                         ),
                                       );

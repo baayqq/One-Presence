@@ -10,6 +10,7 @@ import 'package:onepresence/model/absen_status_model.dart';
 import 'package:onepresence/api/absen_api.dart';
 import 'package:onepresence/pages/in_navbot/home_page.dart';
 import 'package:onepresence/pages/navBott.dart';
+import 'package:onepresence/model/absen_checkin_response_model.dart';
 
 class Absens extends StatefulWidget {
   const Absens({super.key});
@@ -146,26 +147,41 @@ class _AbsensState extends State<Absens> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
     if (token == null) return;
-    final response = await fetchAbsenToday(token);
-    final data = response.data;
-    setState(() {
-      if (data == null ||
-          data.jamMasuk == null ||
-          data.jamMasuk.isEmpty ||
-          !isToday(data.jamMasuk)) {
-        _checkedIn = false;
-        _absenStatusMessage = "Belum check-in";
-      } else if (isToday(data.jamMasuk) &&
-          (data.jamKeluar == null ||
-              data.jamKeluar.isEmpty ||
-              !isToday(data.jamKeluar))) {
-        _checkedIn = true;
-        _absenStatusMessage = "Sudah check-in, belum check-out";
-      } else if (isToday(data.jamKeluar)) {
-        _checkedIn = true;
-        _absenStatusMessage = "Sudah check-out";
+    try {
+      final response = await fetchAbsenToday(token);
+      final data = response.data;
+      setState(() {
+        if (data == null ||
+            data.jamMasuk == null ||
+            data.jamMasuk.isEmpty ||
+            !isToday(data.jamMasuk)) {
+          _checkedIn = false;
+          _absenStatusMessage = "Belum check-in";
+        } else if (isToday(data.jamMasuk) &&
+            (data.jamKeluar == null ||
+                data.jamKeluar.isEmpty ||
+                !isToday(data.jamKeluar))) {
+          _checkedIn = true;
+          _absenStatusMessage = "Sudah check-in, belum check-out";
+        } else if (isToday(data.jamKeluar)) {
+          _checkedIn = true;
+          _absenStatusMessage = "Sudah check-out";
+        }
+      });
+    } catch (e) {
+      if (e.toString().contains(
+        'Belum ada data absensi pada tanggal tersebut',
+      )) {
+        setState(() {
+          _checkedIn = false;
+          _absenStatusMessage = "Belum check-in";
+        });
+      } else {
+        setState(() {
+          _absenStatusMessage = 'Gagal cek status absen: $e';
+        });
       }
-    });
+    }
   }
 
   Future<void> _checkAbsenStatus() async {
@@ -292,6 +308,7 @@ class _AbsensState extends State<Absens> {
                                         address: _currentAddress,
                                       );
                                       if (!mounted) return;
+                                      // Tampilkan detail absen jika perlu
                                       if (response.message.contains(
                                         'sudah melakukan absen',
                                       )) {
@@ -314,7 +331,9 @@ class _AbsensState extends State<Absens> {
                                           context,
                                         ).showSnackBar(
                                           SnackBar(
-                                            content: Text(response.message),
+                                            content: Text(
+                                              'Berhasil check-in',
+                                            ),
                                             backgroundColor: Colors.green,
                                           ),
                                         );

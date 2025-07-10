@@ -4,6 +4,9 @@ import 'package:onepresence/model/absen_stats_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onepresence/api/absen_history_api.dart';
 import 'package:onepresence/model/absen_history_model.dart';
+import 'package:onepresence/api/absen_history_response_service.dart';
+import 'package:onepresence/model/absen_history_response_model.dart'
+    as absenresp;
 
 class RekapAbs extends StatefulWidget {
   const RekapAbs({super.key});
@@ -19,7 +22,7 @@ class _RekapAbsState extends State<RekapAbs> {
     return UserService().getAbsenStats(token);
   }
 
-  List<AbsenHistoryData> _absenHistory = [];
+  absenresp.AbsenHistoryResponse? _historyResponse;
   bool _loadingHistory = true;
   String? _historyError;
   DateTime? _selectedDate;
@@ -47,10 +50,13 @@ class _RekapAbsState extends State<RekapAbs> {
         });
         return;
       }
-      final historyResponse = await fetchAbsenHistory(token);
+      final historyResponse = await getAbsenHistoryResponse(
+        token,
+        date: _selectedDate,
+      );
       if (!mounted) return;
       setState(() {
-        _absenHistory = historyResponse.data;
+        _historyResponse = historyResponse;
         _loadingHistory = false;
       });
     } catch (e) {
@@ -62,12 +68,9 @@ class _RekapAbsState extends State<RekapAbs> {
     }
   }
 
-  List<AbsenHistoryData> get _filteredHistory {
-    if (_selectedDate == null) return _absenHistory;
-    final selectedStr = _selectedDateStr();
-    return _absenHistory
-        .where((absen) => absen.checkIn.startsWith(selectedStr))
-        .toList();
+  List<absenresp.AbsenHistoryItem> get _filteredHistory {
+    if (_historyResponse == null) return [];
+    return _historyResponse!.data;
   }
 
   String _selectedDateStr() {
@@ -128,6 +131,7 @@ class _RekapAbsState extends State<RekapAbs> {
                             setState(() {
                               _selectedDate = picked;
                             });
+                            await _fetchAbsenHistory();
                           }
                         },
                       ),
@@ -135,10 +139,11 @@ class _RekapAbsState extends State<RekapAbs> {
                     if (_selectedDate != null)
                       IconButton(
                         icon: const Icon(Icons.clear),
-                        onPressed: () {
+                        onPressed: () async {
                           setState(() {
                             _selectedDate = null;
                           });
+                          await _fetchAbsenHistory();
                         },
                       ),
                   ],
@@ -161,23 +166,16 @@ class _RekapAbsState extends State<RekapAbs> {
                             itemBuilder: (context, index) {
                               final absen = _filteredHistory[index];
                               final tgl =
-                                  absen.checkIn.length >= 10
-                                      ? absen.checkIn.substring(8, 10)
+                                  absen.attendanceDate.length >= 10
+                                      ? absen.attendanceDate.substring(8, 10)
                                       : '';
                               final bulan =
-                                  absen.checkIn.length >= 7
-                                      ? absen.checkIn.substring(5, 7)
+                                  absen.attendanceDate.length >= 7
+                                      ? absen.attendanceDate.substring(5, 7)
                                       : '';
                               final namaBulan = _getNamaBulan(bulan);
-                              final jamMasuk =
-                                  absen.checkIn.length >= 19
-                                      ? absen.checkIn.substring(11, 19)
-                                      : '-';
-                              final jamKeluar =
-                                  absen.checkOut != null &&
-                                          absen.checkOut!.length >= 19
-                                      ? absen.checkOut!.substring(11, 19)
-                                      : '-';
+                              final jamMasuk = absen.checkInTime;
+                              final jamKeluar = absen.checkOutTime;
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 8,
