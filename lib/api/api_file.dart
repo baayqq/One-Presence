@@ -9,6 +9,7 @@ import 'package:onepresence/model/login_model.dart';
 import 'package:onepresence/model/login_error_model.dart';
 import 'package:onepresence/model/profile_model.dart';
 import 'dart:io';
+import 'package:onepresence/model/izin_absen_model.dart';
 
 class UserService {
   Future<Map<String, dynamic>> registUser(
@@ -137,6 +138,23 @@ class UserService {
       return EditProfilePhotoResponse.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Gagal update foto profil. [${response.statusCode}]');
+    }
+  }
+
+  Future<IzinAbsenResponse> ajukanIzinAbsen({
+    required String token,
+    required String date, // yyyy-MM-dd
+    required String alasanIzin,
+  }) async {
+    final response = await http.post(
+      Uri.parse('https://appabsensi.mobileprojp.com/api/izin'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+      body: {'date': date, 'alasan_izin': alasanIzin},
+    );
+    if (response.statusCode == 200) {
+      return IzinAbsenResponse.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Gagal mengajukan izin: ${response.body}');
     }
   }
 }

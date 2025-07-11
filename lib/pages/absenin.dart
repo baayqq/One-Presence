@@ -254,40 +254,33 @@ class _AbsensState extends State<Absens> {
                                         address: _currentAddress,
                                       );
                                       if (!mounted) return;
-                                      // Tampilkan detail absen jika perlu
-                                      if (response.message.contains(
-                                        'sudah melakukan absen',
-                                      )) {
-                                        setState(() {
-                                          _checkedIn = true;
-                                        });
+                                      if (response is Map &&
+                                          response.containsKey('message')) {
+                                        // Jika response error
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(
                                           SnackBar(
-                                            content: Text(response.message),
+                                            content: Text(
+                                              response['message'].toString(),
+                                            ),
                                             backgroundColor: Colors.red,
                                           ),
                                         );
                                       } else {
+                                        // Jika response sukses (tidak ada key 'message')
                                         setState(() {
                                           _checkedIn = true;
                                         });
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(
-                                          SnackBar(
-                                            content: Text('Berhasil check-in'),
+                                          const SnackBar(
+                                            content: Text('Check-in berhasil!'),
                                             backgroundColor: Colors.green,
                                           ),
                                         );
-                                        Navigator.pushAndRemoveUntil(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => HomeBottom(),
-                                          ),
-                                          (route) => false,
-                                        );
+                                        // Navigasi atau refresh status jika perlu
                                       }
                                       await _refreshAbsenStatus();
                                     } catch (e) {

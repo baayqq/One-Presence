@@ -5,6 +5,8 @@ import 'package:onepresence/api/absen_history_api.dart';
 import 'package:onepresence/model/absen_history_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import 'package:onepresence/model/izin_absen_model.dart';
+import 'package:onepresence/api/api_file.dart';
 
 class RekapAbs extends StatefulWidget {
   const RekapAbs({super.key});
@@ -50,57 +52,184 @@ class _RekapAbsState extends State<RekapAbs> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          FutureBuilder<AbsenStatsResponse>(
-            future: _statsFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Text('Gagal memuat statistik: ${snapshot.error}');
-              } else if (snapshot.hasData) {
-                final stats = snapshot.data!.data;
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _statBox('Total Absen', stats.totalAbsen),
-                        _statBox('Masuk', stats.totalMasuk),
-                        _statBox('Izin', stats.totalIzin),
-                        Column(
-                          children: [
-                            const Text(
-                              'Hari Ini',
-                              style: TextStyle(fontSize: 12),
-                            ),
-                            Icon(
-                              stats.sudahAbsenHariIni
-                                  ? Icons.check_circle
-                                  : Icons.cancel,
-                              color:
-                                  stats.sudahAbsenHariIni
-                                      ? Colors.green
-                                      : Colors.red,
-                            ),
-                          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        FutureBuilder<AbsenStatsResponse>(
+          future: _statsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Text('Gagal memuat statistik: ${snapshot.error}');
+            } else if (snapshot.hasData) {
+              final stats = snapshot.data!.data;
+              return Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Color(0xff468585),
+                  // borderRadius: BorderRadius.only(
+                  //   bottomLeft: Radius.circular(40),
+                  //   bottomRight: Radius.circular(40),
+                  // ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 48),
+                      Card(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              _statBox('Total Absen', stats.totalAbsen),
+                              _statBox('Masuk', stats.totalMasuk),
+                              _statBox('Izin', stats.totalIzin),
+                              Column(
+                                children: [
+                                  const Text(
+                                    'Hari Ini',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  Icon(
+                                    stats.sudahAbsenHariIni
+                                        ? Icons.check_circle
+                                        : Icons.cancel,
+                                    color:
+                                        stats.sudahAbsenHariIni
+                                            ? Colors.green
+                                            : Colors.red,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.assignment_late),
+                          label: const Text('Ajukan Izin'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color.fromARGB(221, 255, 255, 255),
+                          ),
+                          onPressed: () async {
+                            final result = await showDialog<
+                              Map<String, String>
+                            >(
+                              context: context,
+                              builder: (context) {
+                                DateTime? selectedDate = DateTime.now();
+                                TextEditingController alasanController =
+                                    TextEditingController();
+                                return AlertDialog(
+                                  title: const Text('Ajukan Izin Absen'),
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      ListTile(
+                                        title: Text(
+                                          selectedDate == null
+                                              ? 'Pilih Tanggal'
+                                              : DateFormat(
+                                                'yyyy-MM-dd',
+                                              ).format(selectedDate),
+                                        ),
+                                        trailing: Icon(Icons.date_range),
+                                        onTap: () async {
+                                          final picked = await showDatePicker(
+                                            context: context,
+                                            initialDate:
+                                                selectedDate ?? DateTime.now(),
+                                            firstDate: DateTime(2020),
+                                            lastDate: DateTime.now().add(
+                                              const Duration(days: 365),
+                                            ),
+                                          );
+                                          if (picked != null) {
+                                            selectedDate = picked;
+                                            (context as Element)
+                                                .markNeedsBuild();
+                                          }
+                                        },
+                                      ),
+                                      TextField(
+                                        controller: alasanController,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Alasan Izin',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text('Batal'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        if (selectedDate != null &&
+                                            alasanController.text.isNotEmpty) {
+                                          Navigator.pop(context, {
+                                            'date': DateFormat(
+                                              'yyyy-MM-dd',
+                                            ).format(selectedDate!),
+                                            'alasan': alasanController.text,
+                                          });
+                                        }
+                                      },
+                                      child: const Text('Ajukan'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                            if (result != null) {
+                              try {
+                                final prefs =
+                                    await SharedPreferences.getInstance();
+                                final token = prefs.getString('token') ?? '';
+                                final izinResponse = await UserService()
+                                    .ajukanIzinAbsen(
+                                      token: token,
+                                      date: result['date']!,
+                                      alasanIzin: result['alasan']!,
+                                    );
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(izinResponse.message),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Gagal mengajukan izin: $e'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                );
-              } else {
-                return const SizedBox();
-              }
-            },
-          ),
-          Row(
+                ),
+              );
+            } else {
+              return const SizedBox();
+            }
+          },
+        ),
+
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
@@ -121,121 +250,120 @@ class _RekapAbsState extends State<RekapAbs> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: FutureBuilder<AbsenHistoryResponse>(
-              future: _historyFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(
-                    child: Text('Gagal memuat history: ${snapshot.error}'),
-                  );
-                } else if (snapshot.hasData) {
-                  List<AbsenHistoryItem> data = snapshot.data!.data;
-                  if (_selectedDate != null) {
-                    final filterStr = DateFormat(
-                      'yyyy-MM-dd',
-                    ).format(_selectedDate!);
-                    data =
-                        data
-                            .where((e) => e.attendanceDate == filterStr)
-                            .toList();
-                  }
-                  if (data.isEmpty) {
-                    return const Center(child: Text('-'));
-                  }
-                  return ListView.builder(
-                    itemCount: data.length,
-                    itemBuilder: (context, idx) {
-                      final absen = data[idx];
-                      final tgl =
-                          absen.attendanceDate.length >= 10
-                              ? absen.attendanceDate.substring(8, 10)
-                              : '-';
-                      final bulan =
-                          absen.attendanceDate.length >= 7
-                              ? absen.attendanceDate.substring(5, 7)
-                              : '-';
-                      final namaBulan = _getNamaBulan(bulan);
-                      final jamMasuk = absen.checkInTime ?? '-';
-                      final jamKeluar = absen.checkOutTime ?? '-';
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 6),
-                        child: ListTile(
-                          leading: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                tgl,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              Text(
-                                namaBulan,
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                            ],
-                          ),
-                          title: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Check in',
-                                    style: TextStyle(fontSize: 12),
-                                  ),
-                                  Text(
-                                    jamMasuk,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Check out',
-                                    style: TextStyle(fontSize: 12),
-                                  ),
-                                  Text(
-                                    jamKeluar,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          subtitle:
-                              absen.status == 'izin' && absen.alasanIzin != null
-                                  ? Text(
-                                    'Izin: ${absen.alasanIzin!}',
-                                    style: const TextStyle(
-                                      color: Colors.orange,
-                                    ),
-                                  )
-                                  : null,
-                        ),
-                      );
-                    },
-                  );
-                } else {
-                  return const SizedBox();
+        ),
+        const SizedBox(height: 8),
+        Expanded(
+          child: FutureBuilder<AbsenHistoryResponse>(
+            future: _historyFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text('Gagal memuat history: ${snapshot.error}'),
+                );
+              } else if (snapshot.hasData) {
+                List<AbsenHistoryItem> data = snapshot.data!.data;
+                if (_selectedDate != null) {
+                  final filterStr = DateFormat(
+                    'yyyy-MM-dd',
+                  ).format(_selectedDate!);
+                  data =
+                      data.where((e) => e.attendanceDate == filterStr).toList();
                 }
-              },
-            ),
+                if (data.isEmpty) {
+                  return const Center(child: Text('-'));
+                }
+                return ListView.builder(
+                  itemCount: data.length,
+                  itemBuilder: (context, idx) {
+                    final absen = data[idx];
+                    final tgl =
+                        absen.attendanceDate.length >= 10
+                            ? absen.attendanceDate.substring(8, 10)
+                            : '-';
+                    final bulan =
+                        absen.attendanceDate.length >= 7
+                            ? absen.attendanceDate.substring(5, 7)
+                            : '-';
+                    final namaBulan = _getNamaBulan(bulan);
+                    final jamMasuk = absen.checkInTime ?? '-';
+                    final jamKeluar = absen.checkOutTime ?? '-';
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                        vertical: 6,
+                        horizontal: 16,
+                      ),
+                      child: ListTile(
+                        leading: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              tgl,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            Text(
+                              namaBulan,
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Check in',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                                Text(
+                                  jamMasuk,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Check out',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                                Text(
+                                  jamKeluar,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        subtitle:
+                            absen.status == 'izin' && absen.alasanIzin != null
+                                ? Text(
+                                  'Izin: ${absen.alasanIzin!}',
+                                  style: const TextStyle(color: Colors.orange),
+                                )
+                                : null,
+                      ),
+                    );
+                  },
+                );
+              } else {
+                return const SizedBox();
+              }
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

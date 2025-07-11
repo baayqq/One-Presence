@@ -72,6 +72,7 @@ class _HomeSpageState extends State<HomeSpage> {
   }
 
   Future<void> _fetchAbsenToday() async {
+    if (!mounted) return;
     setState(() {
       _loadingAbsenToday = true;
       _absenTodayError = null;
@@ -80,6 +81,7 @@ class _HomeSpageState extends State<HomeSpage> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
       if (token == null) {
+        if (!mounted) return;
         setState(() {
           _absenTodayError = 'Token tidak ditemukan.';
           _loadingAbsenToday = false;
@@ -87,12 +89,14 @@ class _HomeSpageState extends State<HomeSpage> {
         return;
       }
       final absenTodayResponse = await getAbsenToday(token, DateTime.now());
+      if (!mounted) return;
       setState(() {
         _absenToday = absenTodayResponse;
         _loadingAbsenToday = false;
       });
       print('Absen today: ${_absenToday?.data?.checkInTime}');
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _absenTodayError = e.toString();
         _loadingAbsenToday = false;
@@ -101,6 +105,7 @@ class _HomeSpageState extends State<HomeSpage> {
   }
 
   Future<void> _fetchAbsenHistory() async {
+    if (!mounted) return;
     setState(() {
       _loadingHistory = true;
       _historyError = null;
@@ -109,6 +114,7 @@ class _HomeSpageState extends State<HomeSpage> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
       if (token == null) {
+        if (!mounted) return;
         setState(() {
           _historyError = 'Token tidak ditemukan.';
           _loadingHistory = false;
@@ -116,11 +122,13 @@ class _HomeSpageState extends State<HomeSpage> {
         return;
       }
       final historyResponse = await fetchAbsenHistory(token);
+      if (!mounted) return;
       setState(() {
         _absenHistory = historyResponse.data;
         _loadingHistory = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _historyError = e.toString();
         _loadingHistory = false;
@@ -129,6 +137,7 @@ class _HomeSpageState extends State<HomeSpage> {
   }
 
   Future<void> _fetchAbsen7History() async {
+    if (!mounted) return;
     setState(() {
       _loading7History = true;
       _history7Error = null;
@@ -137,6 +146,7 @@ class _HomeSpageState extends State<HomeSpage> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
       if (token == null) {
+        if (!mounted) return;
         setState(() {
           _history7Error = 'Token tidak ditemukan.';
           _loading7History = false;
@@ -146,11 +156,13 @@ class _HomeSpageState extends State<HomeSpage> {
       final response = await fetchAbsenHistoryNew(token);
       final all = response.data;
       all.sort((a, b) => b.attendanceDate.compareTo(a.attendanceDate));
+      if (!mounted) return;
       setState(() {
         _last7History = all.take(7).toList();
         _loading7History = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _history7Error = e.toString();
         _loading7History = false;

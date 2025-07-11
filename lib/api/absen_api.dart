@@ -4,6 +4,7 @@ import 'package:onepresence/model/absen_today_model.dart';
 import 'package:onepresence/model/absen_checkin_response_model.dart';
 import 'package:onepresence/model/training_detail_model.dart';
 import 'package:onepresence/api/api_file.dart';
+import 'package:intl/intl.dart';
 
 // Fungsi untuk mengambil data absen hari ini
 Future<AbsenTodayResponse> fetchAbsenToday(String token) async {
@@ -22,36 +23,40 @@ Future<AbsenTodayResponse> fetchAbsenToday(String token) async {
 }
 
 // Fungsi untuk absen check-in
-Future<AbsenCheckInResponse> absenCheckIn({
+Future<dynamic> absenCheckIn({
   required String token,
   required double lat,
   required double lng,
   required String address,
+  String? imagePath,
 }) async {
+  final now = DateTime.now();
+  final attendanceDate = DateFormat('yyyy-MM-dd').format(now);
+  final checkInTime = DateFormat('HH:mm').format(now);
+
   final uri = Uri.parse(
     'https://appabsensi.mobileprojp.com/api/absen/check-in',
   );
   var request =
       http.MultipartRequest('POST', uri)
         ..headers['Authorization'] = 'Bearer $token'
-        ..headers['Accept'] = 'application/json'
+        ..fields['attendance_date'] = attendanceDate
+        ..fields['check_in'] = checkInTime
         ..fields['check_in_lat'] = lat.toString()
         ..fields['check_in_lng'] = lng.toString()
         ..fields['check_in_address'] = address;
+
+  if (imagePath != null && imagePath.isNotEmpty) {
+    request.files.add(await http.MultipartFile.fromPath('photo', imagePath));
+  }
 
   final streamedResponse = await request.send();
   final response = await http.Response.fromStream(streamedResponse);
 
   if (response.statusCode == 200) {
-    return AbsenCheckInResponse.fromJson(jsonDecode(response.body));
+    return jsonDecode(response.body);
   } else {
-    try {
-      final body = jsonDecode(response.body);
-      final message = body['message'] ?? 'Gagal check-in';
-      throw Exception(message);
-    } catch (_) {
-      throw Exception('Gagal check-in: ${response.body}');
-    }
+    throw Exception('Gagal check-in: ${response.body}');
   }
 }
 

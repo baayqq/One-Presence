@@ -44,18 +44,98 @@ class _DetailProfileState extends State<DetailProfile> {
     }
   }
 
+  void _showTrainingDetailDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Detail Training'),
+          content: FutureBuilder<TrainingDetailResponse>(
+            future: _trainingDetailFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  height: 80,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              } else if (snapshot.hasError) {
+                String errorMsg = 'Gagal memuat detail training';
+                final error = snapshot.error.toString();
+                final match = RegExp(
+                  r'"message"\s*:\s*"([^"]+)"',
+                ).firstMatch(error);
+                if (match != null) {
+                  errorMsg = match.group(1)!;
+                }
+                return Text(
+                  errorMsg,
+                  style: const TextStyle(color: Colors.red),
+                );
+              } else if (snapshot.hasData && snapshot.data!.data != null) {
+                final detail = snapshot.data!.data!;
+                return SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('ID: ${detail.id}'),
+                      const SizedBox(height: 8),
+                      Text('Judul: ${detail.title}'),
+                      const SizedBox(height: 8),
+                      Text('Deskripsi: ${detail.description ?? '-'}'),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Jumlah Peserta: ${detail.participantCount?.toString() ?? '-'}',
+                      ),
+                      const SizedBox(height: 8),
+                      Text('Standar: ${detail.standard ?? '-'}'),
+                      const SizedBox(height: 8),
+                      Text('Durasi: ${detail.duration ?? '-'}'),
+                      const SizedBox(height: 8),
+                      Text('Dibuat: ${detail.createdAt ?? '-'}'),
+                      const SizedBox(height: 8),
+                      Text('Diupdate: ${detail.updatedAt ?? '-'}'),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Units: ${(detail.units != null && detail.units!.isNotEmpty) ? detail.units!.length.toString() + ' item' : '-'}',
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Activities: ${(detail.activities != null && detail.activities!.isNotEmpty) ? detail.activities!.length.toString() + ' item' : '-'}',
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                return const Text('Detail training tidak tersedia');
+              }
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Tutup'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final profile = widget.profile;
     return Scaffold(
-      appBar: AppBar(title: const Text('Detail Profil')),
+      appBar: AppBar(
+        title: const Text('Detail Profil'),
+        backgroundColor: Color(0xff468585),
+      ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(10.0),
           child: Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Color(0xffffffff),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -70,162 +150,76 @@ class _DetailProfileState extends State<DetailProfile> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      profile.profilePhoto != null &&
-                              profile.profilePhoto!.isNotEmpty
-                          ? CircleAvatar(
-                            radius: 40,
-                            backgroundColor: Colors.white,
-                            backgroundImage: base64ImageProvider(
-                              profile.profilePhoto,
-                            ),
-                            child: null,
-                          )
-                          : const CircleAvatar(
-                            radius: 40,
-                            child: Icon(
-                              Icons.account_circle,
-                              size: 60,
-                              color: Colors.grey,
-                            ),
+                  (profile.profilePhoto != null &&
+                          profile.profilePhoto!.isNotEmpty)
+                      ? Center(
+                        child: CircleAvatar(
+                          radius: 100,
+                          backgroundColor: Colors.white,
+                          backgroundImage:
+                              base64ImageProvider(profile.profilePhoto!) ??
+                              const AssetImage(
+                                    'assets/images/default_profile.png',
+                                  )
+                                  as ImageProvider,
+                        ),
+                      )
+                      : Center(
+                        child: CircleAvatar(
+                          radius: 80,
+                          backgroundColor: Colors.white,
+                          backgroundImage: const AssetImage(
+                            'assets/images/default_profile.png',
                           ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Nama: ${profile.name}',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Email: ${profile.email}',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Gender: ${profile.jenisKelamin}',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ],
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Batch: ${profile.batchKe}',
-                    style: const TextStyle(fontSize: 16),
-                  ),
                   const SizedBox(height: 16),
-                  Text(
-                    'Pelatihan: ${profile.trainingTitle}',
-                    style: const TextStyle(fontSize: 16),
+                  // Ganti Column data profil menjadi ListTile dengan ikon
+                  ListTile(
+                    leading: Icon(Icons.person),
+                    title: Text('Nama'),
+                    subtitle: Text(profile.name ?? '-'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.email),
+                    title: Text('Email'),
+                    subtitle: Text(profile.email ?? '-'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.group),
+                    title: Text('Batch'),
+                    subtitle: Text(profile.batchKe?.toString() ?? '-'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.wc),
+                    title: Text('Gender'),
+                    subtitle: Text(profile.jenisKelamin ?? '-'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.school),
+                    title: Text('Pelatihan'),
+                    subtitle: Text(profile.trainingTitle ?? '-'),
                   ),
                   if (profile.batch != null) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      'Periode Batch: ${profile.batch!.startDate} s/d ${profile.batch!.endDate}',
-                      style: const TextStyle(fontSize: 16),
+                    ListTile(
+                      leading: Icon(Icons.date_range),
+                      title: Text('Periode Batch'),
+                      subtitle: Text(
+                        '${profile.batch!.startDate} s/d ${profile.batch!.endDate}',
+                      ),
                     ),
                   ],
                   if (profile.training != null) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      'Judul Training: ${profile.training!.title}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 16),
-                    FutureBuilder<TrainingDetailResponse>(
-                      future: _trainingDetailFuture,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        } else if (snapshot.hasError) {
-                          // Ambil hanya pesan 'message' dari error jika ada
-                          String errorMsg = 'Gagal memuat detail training';
-                          final error = snapshot.error.toString();
-                          final match = RegExp(
-                            r'"message"\s*:\s*"([^"]+)"',
-                          ).firstMatch(error);
-                          if (match != null) {
-                            errorMsg = match.group(1)!;
-                          }
-                          return Text(
-                            errorMsg,
-                            style: TextStyle(color: Colors.red),
-                          );
-                        } else if (snapshot.hasData &&
-                            snapshot.data!.data != null) {
-                          final detail = snapshot.data!.data!;
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'ID: ${detail.id}',
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Judul: ${detail.title}',
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Deskripsi: ${detail.description ?? '-'}',
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Jumlah Peserta: ${detail.participantCount?.toString() ?? '-'}',
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Standar: ${detail.standard ?? '-'}',
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Durasi: ${detail.duration ?? '-'}',
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Dibuat: ${detail.createdAt ?? '-'}',
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Diupdate: ${detail.updatedAt ?? '-'}',
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Units: ${(detail.units != null && detail.units!.isNotEmpty) ? detail.units!.length.toString() + ' item' : '-'}',
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Activities: ${(detail.activities != null && detail.activities!.isNotEmpty) ? detail.activities!.length.toString() + ' item' : '-'}',
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                            ],
-                          );
-                        } else {
-                          return const Text('Detail training tidak tersedia');
-                        }
+                    ListTile(
+                      leading: Icon(Icons.book),
+                      title: Text('Judul Training'),
+                      subtitle: Text(profile.training!.title ?? '-'),
+                      onTap: () {
+                        _showTrainingDetailDialog(context);
                       },
                     ),
+                    // FutureBuilder tetap di bawah
+                    const SizedBox(height: 8),
                   ],
                 ],
               ),
