@@ -286,14 +286,35 @@ class _HomeSpageState extends State<HomeSpage> {
                                 : Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      _profile!.name,
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        color: Colors.white,
-                                      ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          _profile!.name,
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Fiture akan segera hadir',
+                                                ),
+                                                backgroundColor:
+                                                    Colors.redAccent,
+                                              ),
+                                            );
+                                          },
+                                          icon: Icon(Icons.dark_mode),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(height: 4),
                                     Text(
                                       _profile!.trainingTitle.isNotEmpty
                                           ? _profile!.trainingTitle

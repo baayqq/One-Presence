@@ -157,6 +157,38 @@ class UserService {
       throw Exception('Gagal mengajukan izin: ${response.body}');
     }
   }
+
+  Future<String> forgotPassword(String email) async {
+    final response = await http.post(
+      Uri.parse('https://appabsensi.mobileprojp.com/api/forgot-password'),
+      headers: {'Accept': 'application/json'},
+      body: {'email': email},
+    );
+    final jsonData = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      return jsonData['message'] ?? 'OTP berhasil dikirim ke email';
+    } else {
+      throw Exception(jsonData['message'] ?? 'Gagal mengirim OTP');
+    }
+  }
+
+  Future<String> resetPassword({
+    required String email,
+    required String otp,
+    required String password,
+  }) async {
+    final response = await http.post(
+      Uri.parse('https://appabsensi.mobileprojp.com/api/reset-password'),
+      headers: {'Accept': 'application/json'},
+      body: {'email': email, 'otp': otp, 'password': password},
+    );
+    final jsonData = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      return jsonData['message'] ?? 'Password berhasil diperbarui';
+    } else {
+      throw Exception(jsonData['message'] ?? 'Gagal reset password');
+    }
+  }
 }
 
 String baseUrl = 'https://appabsensi.mobileprojp.com/api';

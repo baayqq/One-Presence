@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:onepresence/model/izin_absen_model.dart';
 import 'package:onepresence/api/api_file.dart';
+import 'package:month_picker_dialog/month_picker_dialog.dart';
 
 class RekapAbs extends StatefulWidget {
   const RekapAbs({super.key});
@@ -16,7 +17,7 @@ class RekapAbs extends StatefulWidget {
 }
 
 class _RekapAbsState extends State<RekapAbs> {
-  DateTime? _selectedDate;
+  DateTime? _selectedMonth;
   Future<AbsenStatsResponse>? _statsFuture;
   Future<AbsenHistoryResponse>? _historyFuture;
 
@@ -35,17 +36,17 @@ class _RekapAbsState extends State<RekapAbs> {
     });
   }
 
-  void _pickDate() async {
-    final picked = await showDatePicker(
+  void _pickMonth() async {
+    final now = DateTime.now();
+    final picked = await showMonthPicker(
       context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-      locale: const Locale('id', 'ID'),
+      initialDate: _selectedMonth ?? DateTime(now.year, now.month),
+      firstDate: DateTime(2020, 1),
+      lastDate: DateTime(now.year + 1, 12),
     );
     if (picked != null) {
       setState(() {
-        _selectedDate = picked;
+        _selectedMonth = DateTime(picked.year, picked.month);
       });
     }
   }
@@ -126,73 +127,106 @@ class _RekapAbsState extends State<RekapAbs> {
                                 DateTime? selectedDate = DateTime.now();
                                 TextEditingController alasanController =
                                     TextEditingController();
-                                return AlertDialog(
-                                  title: const Text('Ajukan Izin Absen'),
-                                  content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      ListTile(
-                                        title: Text(
-                                          selectedDate == null
-                                              ? 'Pilih Tanggal'
-                                              : DateFormat(
-                                                'yyyy-MM-dd',
-                                              ).format(selectedDate),
-                                        ),
-                                        trailing: Icon(Icons.date_range),
-                                        onTap: () async {
-                                          final picked = await showDatePicker(
-                                            context: context,
-                                            initialDate:
-                                                selectedDate ?? DateTime.now(),
-                                            firstDate: DateTime(2020),
-                                            lastDate: DateTime.now().add(
-                                              const Duration(days: 365),
+                                return StatefulBuilder(
+                                  builder: (context, setState) {
+                                    return AlertDialog(
+                                      title: const Text('Ajukan Izin Absen'),
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          ListTile(
+                                            title: Text(
+                                              selectedDate == null
+                                                  ? 'Pilih Tanggal'
+                                                  : DateFormat(
+                                                    'yyyy-MM-dd',
+                                                  ).format(selectedDate!),
                                             ),
-                                          );
-                                          if (picked != null) {
-                                            selectedDate = picked;
-                                            (context as Element)
-                                                .markNeedsBuild();
-                                          }
-                                        },
+                                            trailing: Icon(Icons.date_range),
+                                            onTap: () async {
+                                              final picked =
+                                                  await showDatePicker(
+                                                    context: context,
+                                                    initialDate:
+                                                        selectedDate ??
+                                                        DateTime.now(),
+                                                    firstDate: DateTime(2020),
+                                                    lastDate: DateTime.now()
+                                                        .add(
+                                                          const Duration(
+                                                            days: 365,
+                                                          ),
+                                                        ),
+                                                  );
+                                              if (picked != null) {
+                                                setState(() {
+                                                  selectedDate = picked;
+                                                });
+                                              }
+                                            },
+                                          ),
+                                          TextField(
+                                            controller: alasanController,
+                                            decoration: const InputDecoration(
+                                              labelText: 'Alasan Izin',
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      TextField(
-                                        controller: alasanController,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Alasan Izin',
+                                      actions: [
+                                        TextButton(
+                                          onPressed:
+                                              () => Navigator.pop(context),
+                                          child: const Text('Batal'),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text('Batal'),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        if (selectedDate != null &&
-                                            alasanController.text.isNotEmpty) {
-                                          Navigator.pop(context, {
-                                            'date': DateFormat(
-                                              'yyyy-MM-dd',
-                                            ).format(selectedDate!),
-                                            'alasan': alasanController.text,
-                                          });
-                                        }
-                                      },
-                                      child: const Text('Ajukan'),
-                                    ),
-                                  ],
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            if (selectedDate != null &&
+                                                alasanController
+                                                    .text
+                                                    .isNotEmpty) {
+                                              Navigator.pop(context, {
+                                                'date': DateFormat(
+                                                  'yyyy-MM-dd',
+                                                ).format(selectedDate!),
+                                                'alasan': alasanController.text,
+                                              });
+                                            }
+                                          },
+                                          child: const Text('Ajukan'),
+                                        ),
+                                      ],
+                                    );
+                                  },
                                 );
                               },
                             );
                             if (result != null) {
                               try {
+                                // Cek apakah sudah absen/izin pada tanggal yang dipilih
+                                final historySnapshot = await _historyFuture;
+                                final historyData = historySnapshot?.data ?? [];
+                                final tanggalDipilih = result['date'];
+                                final sudahAbsen = historyData.any(
+                                  (e) => e.attendanceDate == tanggalDipilih,
+                                );
+                                if (sudahAbsen) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Anda sudah melakukan absen pada tanggal ini',
+                                      ),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                  return;
+                                }
                                 final prefs =
                                     await SharedPreferences.getInstance();
                                 final token = prefs.getString('token') ?? '';
+                                print(
+                                  'Tanggal izin yang dikirim: ${result['date']}',
+                                );
                                 final izinResponse = await UserService()
                                     .ajukanIzinAbsen(
                                       token: token,
@@ -206,9 +240,24 @@ class _RekapAbsState extends State<RekapAbs> {
                                   ),
                                 );
                               } catch (e) {
+                                String errorMsg = 'Gagal mengajukan izin';
+                                try {
+                                  final errorJson = e.toString();
+                                  final match = RegExp(
+                                    r'"message":"([^"]+)"',
+                                  ).firstMatch(errorJson);
+                                  if (match != null) {
+                                    errorMsg = match.group(1)!;
+                                  } else {
+                                    errorMsg = e.toString().replaceAll(
+                                      'Exception: ',
+                                      '',
+                                    );
+                                  }
+                                } catch (_) {}
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('Gagal mengajukan izin: $e'),
+                                    content: Text(errorMsg),
                                     backgroundColor: Colors.red,
                                   ),
                                 );
@@ -239,14 +288,14 @@ class _RekapAbsState extends State<RekapAbs> {
               OutlinedButton.icon(
                 icon: const Icon(Icons.date_range),
                 label: Text(
-                  _selectedDate == null
-                      ? 'Pilih Tanggal'
+                  _selectedMonth == null
+                      ? 'Pilih Bulan'
                       : DateFormat(
-                        'dd MMM yyyy',
+                        'MMMM yyyy',
                         'id_ID',
-                      ).format(_selectedDate!),
+                      ).format(_selectedMonth!),
                 ),
-                onPressed: _pickDate,
+                onPressed: _pickMonth,
               ),
             ],
           ),
@@ -264,12 +313,21 @@ class _RekapAbsState extends State<RekapAbs> {
                 );
               } else if (snapshot.hasData) {
                 List<AbsenHistoryItem> data = snapshot.data!.data;
-                if (_selectedDate != null) {
-                  final filterStr = DateFormat(
-                    'yyyy-MM-dd',
-                  ).format(_selectedDate!);
+                if (_selectedMonth != null) {
+                  final monthStr = _selectedMonth!.month.toString().padLeft(
+                    2,
+                    '0',
+                  );
+                  final yearStr = _selectedMonth!.year.toString();
                   data =
-                      data.where((e) => e.attendanceDate == filterStr).toList();
+                      data
+                          .where(
+                            (e) =>
+                                e.attendanceDate.length >= 7 &&
+                                e.attendanceDate.substring(0, 4) == yearStr &&
+                                e.attendanceDate.substring(5, 7) == monthStr,
+                          )
+                          .toList();
                 }
                 if (data.isEmpty) {
                   return const Center(child: Text('-'));

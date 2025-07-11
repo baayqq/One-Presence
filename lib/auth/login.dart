@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:onepresence/auth/register.dart';
+import 'package:onepresence/auth/resetpage.dart';
 import 'package:onepresence/pages/navBott.dart';
 import 'package:onepresence/api/api_file.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -155,11 +156,10 @@ class _LoginPageState extends State<LoginPage> {
                         SizedBox(height: 24),
                         SizedBox(
                           width: double.infinity,
-                          // height: 20,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               padding: EdgeInsets.symmetric(vertical: 12),
-                              backgroundColor: Colors.yellow[600],
+                              backgroundColor: Color(0xff468585),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -175,17 +175,48 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 20),
+                        SizedBox(height: 4), // lebih rapat lagi
+                        // Reset Password
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text.rich(
-                              TextSpan(
-                                text: "Belum mempunyai akun ?",
+                            Text(
+                              "Lupa Password ?",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Color(0xff888888),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ResetPages(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                "Reset",
                                 style: TextStyle(
+                                  color: Color(0xff0D47A1),
+                                  fontWeight: FontWeight.bold,
                                   fontSize: 14,
-                                  color: Color(0xff888888),
                                 ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        // Tidak ada SizedBox di sini agar lebih rapat
+                        // Belum punya akun
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Belum mempunyai akun ?",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Color(0xff888888),
                               ),
                             ),
                             TextButton(

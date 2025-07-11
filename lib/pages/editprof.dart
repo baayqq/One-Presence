@@ -145,7 +145,10 @@ class _EditProfPageState extends State<EditProfPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit Profil')),
+      appBar: AppBar(
+        title: const Text('Edit Profil'),
+        backgroundColor: Color(0xff468585),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Form(
@@ -205,13 +208,7 @@ class _EditProfPageState extends State<EditProfPage> {
                 validator:
                     (v) => v == null || v.isEmpty ? 'Nama wajib diisi' : null,
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-                validator:
-                    (v) => v == null || v.isEmpty ? 'Email wajib diisi' : null,
-              ),
+
               const SizedBox(height: 24),
               if (_errorMsg != null) ...[
                 Text(_errorMsg!, style: const TextStyle(color: Colors.red)),

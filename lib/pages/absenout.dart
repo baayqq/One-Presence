@@ -222,11 +222,26 @@ class _AbsensOutState extends State<AbsensOut> {
                                         (route) => false,
                                       );
                                     } catch (e) {
+                                      String errorMsg = 'Gagal check-out';
+                                      try {
+                                        final errorJson = e.toString();
+                                        final match = RegExp(
+                                          r'"message":"([^"]+)"',
+                                        ).firstMatch(errorJson);
+                                        if (match != null) {
+                                          errorMsg = match.group(1)!;
+                                        } else {
+                                          errorMsg = e.toString().replaceAll(
+                                            'Exception: ',
+                                            '',
+                                          );
+                                        }
+                                      } catch (_) {}
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
                                         SnackBar(
-                                          content: Text('Gagal check-out: $e'),
+                                          content: Text(errorMsg),
                                           backgroundColor: Colors.red,
                                         ),
                                       );

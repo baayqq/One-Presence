@@ -60,10 +60,10 @@ Future<dynamic> absenCheckIn({
   }
 }
 
-Future<TrainingDetailResponse> fetchTrainingDetail(int id) async {
+Future<TrainingDetailResponse> fetchTrainingDetail(int id, String token) async {
   final response = await http.get(
     Uri.parse(trainingDetailUrl(id)),
-    headers: {'Accept': 'application/json'},
+    headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
   );
   if (response.statusCode == 200) {
     return TrainingDetailResponse.fromJson(jsonDecode(response.body));

@@ -33,6 +33,7 @@ class _AbsensState extends State<Absens> {
   ); // Ganti dengan lokasi kantor
   double _distance = 0.0;
   bool _isSubmitting = false;
+  bool _refreshingStatus = false; // guard untuk mencegah loop
 
   // Helper untuk cek apakah tanggal pada string adalah hari ini
   bool isToday(String? dateTimeStr) {
@@ -47,6 +48,7 @@ class _AbsensState extends State<Absens> {
   }
 
   Future<void> _getCurrentLocation() async {
+    print('DEBUG: _getCurrentLocation called');
     setState(() {
       _loading = true;
     });
@@ -117,24 +119,39 @@ class _AbsensState extends State<Absens> {
         _loading = false;
       });
     }
+    print('DEBUG: _getCurrentLocation finished');
   }
 
   @override
   void initState() {
     super.initState();
+    print('DEBUG: initState called');
     _getCurrentLocation();
+    print('DEBUG: initState finished');
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    print('DEBUG: didChangeDependencies called');
     _refreshAbsenStatus();
+    print('DEBUG: didChangeDependencies finished');
   }
 
   Future<void> _refreshAbsenStatus() async {
+    if (_refreshingStatus) {
+      print('DEBUG: _refreshAbsenStatus skipped (already running)');
+      return;
+    }
+    _refreshingStatus = true;
+    print('DEBUG: _refreshAbsenStatus started');
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
-    if (token == null) return;
+    if (token == null) {
+      _refreshingStatus = false;
+      print('DEBUG: _refreshAbsenStatus finished (no token)');
+      return;
+    }
     try {
       final response = await fetchAbsenToday(token);
       final data = response.data;
@@ -165,6 +182,9 @@ class _AbsensState extends State<Absens> {
           // _absenStatusMessage = 'Gagal cek status absen: $e'; // Removed as per edit hint
         });
       }
+    } finally {
+      _refreshingStatus = false;
+      print('DEBUG: _refreshAbsenStatus finished');
     }
   }
 
@@ -255,8 +275,12 @@ class _AbsensState extends State<Absens> {
                                       );
                                       if (!mounted) return;
                                       if (response is Map &&
-                                          response.containsKey('message')) {
-                                        // Jika response error
+                                          response.containsKey('message') &&
+                                          response['message']
+                                              .toString()
+                                              .toLowerCase()
+                                              .contains('sudah')) {
+                                        // Jika pesan error dari backend (sudah absen)
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(
@@ -268,7 +292,7 @@ class _AbsensState extends State<Absens> {
                                           ),
                                         );
                                       } else {
-                                        // Jika response sukses (tidak ada key 'message')
+                                        // Jika response sukses
                                         setState(() {
                                           _checkedIn = true;
                                         });
@@ -276,20 +300,47 @@ class _AbsensState extends State<Absens> {
                                           context,
                                         ).showSnackBar(
                                           const SnackBar(
-                                            content: Text('Check-in berhasil!'),
+                                            content: Text(
+                                              'Absen masuk berhasil!',
+                                            ),
                                             backgroundColor: Colors.green,
                                           ),
                                         );
-                                        // Navigasi atau refresh status jika perlu
+                                        await Future.delayed(
+                                          Duration(milliseconds: 500),
+                                        );
+                                        if (!mounted) return;
+                                        Navigator.pushAndRemoveUntil(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => HomeBottom(),
+                                          ),
+                                          (route) => false,
+                                        );
                                       }
                                       await _refreshAbsenStatus();
                                     } catch (e) {
                                       if (!mounted) return;
+                                      String errorMsg = 'Gagal check-in';
+                                      try {
+                                        final errorJson = e.toString();
+                                        final match = RegExp(
+                                          r'"message":"([^"]+)"',
+                                        ).firstMatch(errorJson);
+                                        if (match != null) {
+                                          errorMsg = match.group(1)!;
+                                        } else {
+                                          errorMsg = e.toString().replaceAll(
+                                            'Exception: ',
+                                            '',
+                                          );
+                                        }
+                                      } catch (_) {}
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
                                         SnackBar(
-                                          content: Text('Gagal check-in: $e'),
+                                          content: Text(errorMsg),
                                           backgroundColor: Colors.red,
                                         ),
                                       );

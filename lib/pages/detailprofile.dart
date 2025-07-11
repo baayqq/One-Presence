@@ -40,7 +40,15 @@ class _DetailProfileState extends State<DetailProfile> {
   void initState() {
     super.initState();
     if (widget.profile.training != null) {
-      _trainingDetailFuture = fetchTrainingDetail(widget.profile.training!.id);
+      SharedPreferences.getInstance().then((prefs) {
+        final token = prefs.getString('token') ?? '';
+        setState(() {
+          _trainingDetailFuture = fetchTrainingDetail(
+            widget.profile.training!.id,
+            token,
+          );
+        });
+      });
     }
   }
 
