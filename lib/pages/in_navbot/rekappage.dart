@@ -119,9 +119,7 @@ class _RekapAbsState extends State<RekapAbs> {
                             backgroundColor: Color.fromARGB(221, 255, 255, 255),
                           ),
                           onPressed: () async {
-                            final result = await showDialog<
-                              Map<String, String>
-                            >(
+                            final result = await showDialog<bool>(
                               context: context,
                               builder: (context) {
                                 DateTime? selectedDate = DateTime.now();
@@ -180,17 +178,70 @@ class _RekapAbsState extends State<RekapAbs> {
                                           child: const Text('Batal'),
                                         ),
                                         ElevatedButton(
-                                          onPressed: () {
+                                          onPressed: () async {
                                             if (selectedDate != null &&
                                                 alasanController
                                                     .text
                                                     .isNotEmpty) {
-                                              Navigator.pop(context, {
-                                                'date': DateFormat(
+                                              try {
+                                                final prefs =
+                                                    await SharedPreferences.getInstance();
+                                                final token =
+                                                    prefs.getString('token') ??
+                                                    '';
+                                                final tanggalIzin = DateFormat(
                                                   'yyyy-MM-dd',
-                                                ).format(selectedDate!),
-                                                'alasan': alasanController.text,
-                                              });
+                                                ).format(selectedDate!);
+                                                final izinResponse =
+                                                    await UserService()
+                                                        .ajukanIzinAbsen(
+                                                          token: token,
+                                                          date: tanggalIzin,
+                                                          alasanIzin:
+                                                              alasanController
+                                                                  .text,
+                                                        );
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      izinResponse.message,
+                                                    ),
+                                                    backgroundColor:
+                                                        Colors.green,
+                                                  ),
+                                                );
+                                                Navigator.pop(context, true);
+                                              } catch (e) {
+                                                String errorMsg =
+                                                    'Gagal mengajukan izin';
+                                                try {
+                                                  final errorJson =
+                                                      e.toString();
+                                                  final match = RegExp(
+                                                    r'"message":"([^"]+)"',
+                                                  ).firstMatch(errorJson);
+                                                  if (match != null) {
+                                                    errorMsg = match.group(1)!;
+                                                  } else {
+                                                    errorMsg = e
+                                                        .toString()
+                                                        .replaceAll(
+                                                          'Exception: ',
+                                                          '',
+                                                        );
+                                                  }
+                                                } catch (_) {}
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(errorMsg),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                              }
                                             }
                                           },
                                           child: const Text('Ajukan'),
@@ -201,67 +252,8 @@ class _RekapAbsState extends State<RekapAbs> {
                                 );
                               },
                             );
-                            if (result != null) {
-                              try {
-                                // Cek apakah sudah absen/izin pada tanggal yang dipilih
-                                final historySnapshot = await _historyFuture;
-                                final historyData = historySnapshot?.data ?? [];
-                                final tanggalDipilih = result['date'];
-                                final sudahAbsen = historyData.any(
-                                  (e) => e.attendanceDate == tanggalDipilih,
-                                );
-                                if (sudahAbsen) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Anda sudah melakukan absen pada tanggal ini',
-                                      ),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                  return;
-                                }
-                                final prefs =
-                                    await SharedPreferences.getInstance();
-                                final token = prefs.getString('token') ?? '';
-                                print(
-                                  'Tanggal izin yang dikirim: ${result['date']}',
-                                );
-                                final izinResponse = await UserService()
-                                    .ajukanIzinAbsen(
-                                      token: token,
-                                      date: result['date']!,
-                                      alasanIzin: result['alasan']!,
-                                    );
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(izinResponse.message),
-                                    backgroundColor: Colors.green,
-                                  ),
-                                );
-                              } catch (e) {
-                                String errorMsg = 'Gagal mengajukan izin';
-                                try {
-                                  final errorJson = e.toString();
-                                  final match = RegExp(
-                                    r'"message":"([^"]+)"',
-                                  ).firstMatch(errorJson);
-                                  if (match != null) {
-                                    errorMsg = match.group(1)!;
-                                  } else {
-                                    errorMsg = e.toString().replaceAll(
-                                      'Exception: ',
-                                      '',
-                                    );
-                                  }
-                                } catch (_) {}
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(errorMsg),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                              }
+                            if (result == true) {
+                              _loadData();
                             }
                           },
                         ),
@@ -360,17 +352,17 @@ class _RekapAbsState extends State<RekapAbs> {
                               tgl,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 18,
+                                fontSize: 20,
                               ),
                             ),
                             Text(
                               namaBulan,
-                              style: const TextStyle(fontSize: 12),
+                              style: const TextStyle(fontSize: 16),
                             ),
                           ],
                         ),
                         title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -387,6 +379,7 @@ class _RekapAbsState extends State<RekapAbs> {
                                 ),
                               ],
                             ),
+                            SizedBox(width: 8),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -408,7 +401,7 @@ class _RekapAbsState extends State<RekapAbs> {
                             absen.status == 'izin' && absen.alasanIzin != null
                                 ? Text(
                                   'Izin: ${absen.alasanIzin!}',
-                                  style: const TextStyle(color: Colors.orange),
+                                  style: const TextStyle(color: Colors.black87),
                                 )
                                 : null,
                       ),
