@@ -248,6 +248,7 @@ class _HomeSpageState extends State<HomeSpage> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
+                  SizedBox(height: 12),
                   Row(
                     children: [
                       _profile != null &&

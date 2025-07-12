@@ -158,7 +158,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             padding: EdgeInsets.symmetric(vertical: 12),
-                            backgroundColor: Color(0xff468585),
+                            backgroundColor: Color(0xff50b498),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -169,7 +169,7 @@ class _LoginPageState extends State<LoginPage> {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 20,
-                              color: Colors.black,
+                              color: Colors.black87,
                             ),
                           ),
                         ),
@@ -180,7 +180,7 @@ class _LoginPageState extends State<LoginPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "Lupa Password ?",
+                            "Lupa Password ? ",
                             style: TextStyle(
                               fontSize: 14,
                               color: Color(0xff888888),
@@ -198,7 +198,7 @@ class _LoginPageState extends State<LoginPage> {
                             child: Text(
                               "Reset",
                               style: TextStyle(
-                                color: Color(0xff0D47A1),
+                                color: Color(0xff50b498),
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
                               ),
@@ -211,7 +211,7 @@ class _LoginPageState extends State<LoginPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "Belum mempunyai akun ?",
+                            "Belum mempunyai akun ? ",
                             style: TextStyle(
                               fontSize: 14,
                               color: Color(0xff888888),
@@ -229,7 +229,7 @@ class _LoginPageState extends State<LoginPage> {
                             child: Text(
                               "Daftar",
                               style: TextStyle(
-                                color: Color(0xff0D47A1),
+                                color: Color(0xff50b498),
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
                               ),

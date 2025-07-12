@@ -69,63 +69,74 @@ class _ProfilePageState extends State<ProfilePage> {
                       vertical: 30,
                       horizontal: 24,
                     ),
+
                     decoration: const BoxDecoration(color: Color(0xff468585)),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                    child: Column(
                       children: [
-                        profile.profilePhoto != null &&
-                                profile.profilePhoto!.isNotEmpty
-                            ? CircleAvatar(
-                              key: ValueKey(profile.profilePhoto),
-                              radius: 48,
-                              backgroundColor: Colors.white,
-                              backgroundImage: base64ImageProvider(
-                                profile.profilePhoto,
-                              ),
-                              child: null,
-                            )
-                            : CircleAvatar(
-                              radius: 48,
-                              backgroundColor: Colors.white,
-                              child: Icon(
-                                Icons.person,
-                                size: 48,
-                                color: Colors.grey,
+                        const SizedBox(height: 12), // Spasi atas sebelum foto
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            profile.profilePhoto != null &&
+                                    profile.profilePhoto!.isNotEmpty
+                                ? CircleAvatar(
+                                  key: ValueKey(profile.profilePhoto),
+                                  radius: 48,
+                                  backgroundColor: Colors.white,
+                                  backgroundImage: base64ImageProvider(
+                                    profile.profilePhoto,
+                                  ),
+                                  child: null,
+                                )
+                                : CircleAvatar(
+                                  radius: 48,
+                                  backgroundColor: Colors.white,
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 48,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                            const SizedBox(width: 20),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(
+                                    height: 16,
+                                  ), // Spasi atas sebelum nama
+                                  Text(
+                                    ' ${profile.name}',
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    ' ${profile.email}',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    ' ${profile.trainingTitle}',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-
-                        const SizedBox(width: 20),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                ' ${profile.name}',
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                ' ${profile.email}',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                ' ${profile.trainingTitle}',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
+                          ],
                         ),
+                        const SizedBox(
+                          height: 16,
+                        ), // Spasi bawah setelah foto dan nama
                       ],
                     ),
                   ),
