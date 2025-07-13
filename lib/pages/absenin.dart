@@ -26,7 +26,7 @@ class _AbsensState extends State<Absens> {
   Marker? _marker;
   bool _loading = true;
   bool _checkedIn = false;
-  final double _radius = 1.0; // meter
+  final double _radius = 4.0; // meter
   final LatLng _officeLocation = const LatLng(
     -6.210879,
     106.812942,
