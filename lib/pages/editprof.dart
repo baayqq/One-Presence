@@ -147,7 +147,7 @@ class _EditProfPageState extends State<EditProfPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Profil'),
-        backgroundColor: Color(0xff468585),
+        backgroundColor: Color(0xff106D6B),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -219,6 +219,9 @@ class _EditProfPageState extends State<EditProfPage> {
                 child: ElevatedButton(
                   onPressed:
                       _loading ? null : _submit, // hanya disable saat _loading
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xff106D6B),
+                  ),
                   child:
                       _loading
                           ? const SizedBox(
@@ -226,7 +229,10 @@ class _EditProfPageState extends State<EditProfPage> {
                             width: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                          : const Text('Simpan'),
+                          : const Text(
+                            'Simpan',
+                            style: TextStyle(color: Colors.white),
+                          ),
                 ),
               ),
             ],

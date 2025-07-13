@@ -120,229 +120,253 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xff468585),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              const SizedBox(height: 48),
-              const Text(
-                'Selamat Datang',
-                style: TextStyle(color: Colors.white),
-              ),
-              const SizedBox(height: 36),
-              Padding(
-                padding: const EdgeInsets.all(28.0),
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: const Color(0xf2ffffff),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black,
-                        blurRadius: 12,
-                        offset: Offset(2, 2),
-                      ),
-                    ],
-                  ),
-                  child: Form(
-                    key: formKey,
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Buat akun',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        TextFormField(
-                          controller: userController,
-                          decoration: inputDecoration(
-                            "Nama",
-                            Icons.account_box,
-                          ),
-                          validator:
-                              (value) =>
-                                  value == null || value.isEmpty
-                                      ? 'Nama wajib diisi'
-                                      : null,
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: emailController,
-                          decoration: inputDecoration("Email", Icons.email),
-                          validator:
-                              (value) =>
-                                  value == null || value.isEmpty
-                                      ? 'Email wajib diisi'
-                                      : null,
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: passwordController,
-                          obscureText: isObsecure,
-                          decoration: inputDecoration(
-                            "Password",
-                            Icons.lock,
-                          ).copyWith(
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                isObsecure
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                              ),
-                              onPressed:
-                                  () =>
-                                      setState(() => isObsecure = !isObsecure),
-                            ),
-                          ),
-                          validator:
-                              (value) =>
-                                  value == null || value.isEmpty
-                                      ? 'Password wajib diisi'
-                                      : null,
-                        ),
-                        const SizedBox(height: 16),
-                        DropdownButtonFormField<String>(
-                          value: selectedGender,
-                          hint: const Text("Jenis Kelamin"),
-                          items: const [
-                            DropdownMenuItem(value: "L", child: Text("Laki-laki")),
-                            DropdownMenuItem(value: "P", child: Text("Perempuan")),
-                          ],
-                          onChanged:
-                              (value) => setState(() => selectedGender = value),
-                          decoration: inputDecoration("", Icons.wc),
-                          validator:
-                              (value) =>
-                                  value == null
-                                      ? 'Jenis kelamin wajib dipilih'
-                                      : null,
-                        ),
-                        const SizedBox(height: 16),
-                        DropdownButtonFormField<int>(
-                          isExpanded: true,
-                          value: selectedBatchId,
-                          hint: const Text("Batch"),
-                          items:
-                              isBatchLoading
-                                  ? []
-                                  : batchList
-                                      .map(
-                                        (batch) => DropdownMenuItem(
-                                          value: batch.id,
-                                          child: Text('Batch ${batch.batchKe}'),
-                                        ),
-                                      )
-                                      .toList(),
-                          onChanged:
-                              isBatchLoading
-                                  ? null
-                                  : (value) =>
-                                      setState(() => selectedBatchId = value),
-                          decoration: inputDecoration(
-                            "Batch ID",
-                            Icons.confirmation_number,
-                          ),
-                          validator:
-                              (value) =>
-                                  value == null
-                                      ? 'Batch ID wajib dipilih'
-                                      : null,
-                        ),
-                        const SizedBox(height: 16),
-                        DropdownButtonFormField<int>(
-                          isExpanded: true,
-                          value: selectedTrainingId,
-                          hint: const Text("Kejuruan"),
-                          items:
-                              isTrainingLoading
-                                  ? []
-                                  : trainingList
-                                      .map(
-                                        (training) => DropdownMenuItem(
-                                          value: training.id,
-                                          child: Text(training.title),
-                                        ),
-                                      )
-                                      .toList(),
-                          onChanged:
-                              isTrainingLoading
-                                  ? null
-                                  : (value) => setState(
-                                    () => selectedTrainingId = value,
-                                  ),
-                          decoration: inputDecoration(
-                            "Training ID",
-                            Icons.school,
-                          ),
-                          validator:
-                              (value) =>
-                                  value == null
-                                      ? 'Kejuruan ID wajib dipilih'
-                                      : null,
-                        ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              backgroundColor: Colors.yellow[600],
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            onPressed: handleRegist,
-                            child: const Text(
-                              'Register',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Sudah punya akun?",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xff888888),
-                              ),
-                            ),
-                            TextButton(
-                              onPressed:
-                                  () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const LoginPage(),
-                                    ),
-                                  ),
-                              child: const Text(
-                                "Login",
-                                style: TextStyle(
-                                  color: Color(0xff0D47A1),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ],
+      // Ganti backgroundColor dengan dekorasi gradient
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xff053B37), Color(0xff106D6B)],
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                SizedBox(height: 12),
+                SizedBox(
+                  height: 100,
+                  width: 100,
+                  child: Image.asset('assets/icon/icon.png'),
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.all(28.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xf2ffffff),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black,
+                          blurRadius: 12,
+                          offset: Offset(2, 2),
                         ),
                       ],
                     ),
+                    child: Form(
+                      key: formKey,
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Buat akun',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          TextFormField(
+                            controller: userController,
+                            decoration: inputDecoration(
+                              "Nama",
+                              Icons.account_box,
+                            ),
+                            validator:
+                                (value) =>
+                                    value == null || value.isEmpty
+                                        ? 'Nama wajib diisi'
+                                        : null,
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: emailController,
+                            decoration: inputDecoration("Email", Icons.email),
+                            validator:
+                                (value) =>
+                                    value == null || value.isEmpty
+                                        ? 'Email wajib diisi'
+                                        : null,
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: passwordController,
+                            obscureText: isObsecure,
+                            decoration: inputDecoration(
+                              "Password",
+                              Icons.lock,
+                            ).copyWith(
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  isObsecure
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                ),
+                                onPressed:
+                                    () => setState(
+                                      () => isObsecure = !isObsecure,
+                                    ),
+                              ),
+                            ),
+                            validator:
+                                (value) =>
+                                    value == null || value.isEmpty
+                                        ? 'Password wajib diisi'
+                                        : null,
+                          ),
+                          const SizedBox(height: 16),
+                          DropdownButtonFormField<String>(
+                            value: selectedGender,
+                            hint: const Text("Jenis Kelamin"),
+                            items: const [
+                              DropdownMenuItem(
+                                value: "L",
+                                child: Text("Laki-laki"),
+                              ),
+                              DropdownMenuItem(
+                                value: "P",
+                                child: Text("Perempuan"),
+                              ),
+                            ],
+                            onChanged:
+                                (value) =>
+                                    setState(() => selectedGender = value),
+                            decoration: inputDecoration("", Icons.wc),
+                            validator:
+                                (value) =>
+                                    value == null
+                                        ? 'Jenis kelamin wajib dipilih'
+                                        : null,
+                          ),
+                          const SizedBox(height: 16),
+                          DropdownButtonFormField<int>(
+                            isExpanded: true,
+                            value: selectedBatchId,
+                            hint: const Text("Batch"),
+                            items:
+                                isBatchLoading
+                                    ? []
+                                    : batchList
+                                        .map(
+                                          (batch) => DropdownMenuItem(
+                                            value: batch.id,
+                                            child: Text(
+                                              'Batch ${batch.batchKe}',
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                            onChanged:
+                                isBatchLoading
+                                    ? null
+                                    : (value) =>
+                                        setState(() => selectedBatchId = value),
+                            decoration: inputDecoration(
+                              "Batch ID",
+                              Icons.confirmation_number,
+                            ),
+                            validator:
+                                (value) =>
+                                    value == null
+                                        ? 'Batch ID wajib dipilih'
+                                        : null,
+                          ),
+                          const SizedBox(height: 16),
+                          DropdownButtonFormField<int>(
+                            isExpanded: true,
+                            value: selectedTrainingId,
+                            hint: const Text("Kejuruan"),
+                            items:
+                                isTrainingLoading
+                                    ? []
+                                    : trainingList
+                                        .map(
+                                          (training) => DropdownMenuItem(
+                                            value: training.id,
+                                            child: Text(training.title),
+                                          ),
+                                        )
+                                        .toList(),
+                            onChanged:
+                                isTrainingLoading
+                                    ? null
+                                    : (value) => setState(
+                                      () => selectedTrainingId = value,
+                                    ),
+                            decoration: inputDecoration(
+                              "Training ID",
+                              Icons.school,
+                            ),
+                            validator:
+                                (value) =>
+                                    value == null
+                                        ? 'Kejuruan ID wajib dipilih'
+                                        : null,
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                backgroundColor: Color(0xff106D6B),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              onPressed: handleRegist,
+                              child: const Text(
+                                'Register',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                  color: Color(0xffF1EEDC),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(
+                                "Sudah punya akun?",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Color(0xff888888),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed:
+                                    () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const LoginPage(),
+                                      ),
+                                    ),
+                                child: const Text(
+                                  "Login",
+                                  style: TextStyle(
+                                    color: Color(0xff106D6B),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

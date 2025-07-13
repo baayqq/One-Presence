@@ -132,17 +132,15 @@ class _AbsensOutState extends State<AbsensOut> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: Color(0xff468585)),
+      appBar: AppBar(backgroundColor: Color(0xff106D6B)),
       body: Column(
         children: [
           // Google Map
-          Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: SizedBox(
-                height: 550,
-                width: double.infinity,
+          Flexible(
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
                 child: GoogleMap(
                   initialCameraPosition: CameraPosition(
                     target: _currentPosition,
@@ -159,137 +157,136 @@ class _AbsensOutState extends State<AbsensOut> {
             ),
           ),
           // Isi absen di bawah
-          Expanded(
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: SingleChildScrollView(
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 65),
-                  decoration: const BoxDecoration(color: Color(0x9f468585)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 8),
-                        Text(
-                          'Radius lokasi: $_radius meter',
-                          style: const TextStyle(fontSize: 16),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SingleChildScrollView(
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 65),
+                decoration: const BoxDecoration(color: Color(0xff106D6B)),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 8),
+                      Text(
+                        'Radius lokasi:  $_radius meter',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Color(0xffF1EEDC),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Jarak ke kantor: ${_distance.toStringAsFixed(2)} meter',
-                          style: const TextStyle(fontSize: 16),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Jarak ke kantor:  ${_distance.toStringAsFixed(2)} meter',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Color(0xffF1EEDC),
                         ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed:
-                              (!_isSubmitting)
-                                  ? () async {
-                                    setState(() {
-                                      _isSubmitting = true;
-                                    });
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed:
+                            (!_isSubmitting)
+                                ? () async {
+                                  setState(() {
+                                    _isSubmitting = true;
+                                  });
+                                  try {
+                                    final prefs =
+                                        await SharedPreferences.getInstance();
+                                    final token = prefs.getString('token');
+                                    if (token == null) {
+                                      throw Exception('Token tidak ditemukan');
+                                    }
+                                    final response = await absenCheckOut(
+                                      token: token,
+                                      lat: _currentPosition.latitude,
+                                      lng: _currentPosition.longitude,
+                                      address: _currentAddress,
+                                    );
+                                    setState(() {});
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Berhasil check-out'),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => HomeBottom(),
+                                      ),
+                                      (route) => false,
+                                    );
+                                  } catch (e) {
+                                    String errorMsg = 'Gagal check-out';
                                     try {
-                                      final prefs =
-                                          await SharedPreferences.getInstance();
-                                      final token = prefs.getString('token');
-                                      if (token == null) {
-                                        throw Exception(
-                                          'Token tidak ditemukan',
+                                      final errorJson = e.toString();
+                                      final match = RegExp(
+                                        r'"message":"([^"]+)"',
+                                      ).firstMatch(errorJson);
+                                      if (match != null) {
+                                        errorMsg = match.group(1)!;
+                                      } else {
+                                        errorMsg = e.toString().replaceAll(
+                                          'Exception: ',
+                                          '',
                                         );
                                       }
-                                      final response = await absenCheckOut(
-                                        token: token,
-                                        lat: _currentPosition.latitude,
-                                        lng: _currentPosition.longitude,
-                                        address: _currentAddress,
-                                      );
-                                      setState(() {});
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text('Berhasil check-out'),
-                                          backgroundColor: Colors.green,
-                                        ),
-                                      );
-                                      Navigator.pushAndRemoveUntil(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => HomeBottom(),
-                                        ),
-                                        (route) => false,
-                                      );
-                                    } catch (e) {
-                                      String errorMsg = 'Gagal check-out';
-                                      try {
-                                        final errorJson = e.toString();
-                                        final match = RegExp(
-                                          r'"message":"([^"]+)"',
-                                        ).firstMatch(errorJson);
-                                        if (match != null) {
-                                          errorMsg = match.group(1)!;
-                                        } else {
-                                          errorMsg = e.toString().replaceAll(
-                                            'Exception: ',
-                                            '',
-                                          );
-                                        }
-                                      } catch (_) {}
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(errorMsg),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                    } finally {
-                                      setState(() {
-                                        _isSubmitting = false;
-                                      });
-                                    }
+                                    } catch (_) {}
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(errorMsg),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  } finally {
+                                    setState(() {
+                                      _isSubmitting = false;
+                                    });
                                   }
-                                  : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 32,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
+                                }
+                                : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 32,
                           ),
-                          child:
-                              _isSubmitting
-                                  ? const SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                  : const Text(
-                                    'Check out',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.white,
-                                    ),
-                                  ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
-                        if (_distance > _radius)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(
-                              'Anda harus berada dalam radius $_radius meter dari kantor.',
-                              style: const TextStyle(color: Colors.red),
-                            ),
+                        child:
+                            _isSubmitting
+                                ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : const Text(
+                                  'Check out',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                      ),
+                      if (_distance > _radius)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            'Anda harus berada dalam radius $_radius meter dari kantor.',
+                            style: const TextStyle(color: Colors.red),
                           ),
-                      ],
-                    ),
+                        ),
+                    ],
                   ),
                 ),
               ),

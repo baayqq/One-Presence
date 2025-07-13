@@ -70,7 +70,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       horizontal: 24,
                     ),
 
-                    decoration: const BoxDecoration(color: Color(0xff468585)),
+                    decoration: const BoxDecoration(color: Color(0xff106D6B)),
                     child: Column(
                       children: [
                         const SizedBox(height: 12), // Spasi atas sebelum foto
@@ -164,7 +164,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          tileColor: Colors.grey[100],
+                          tileColor: Color(0xffF1EEDC),
                         ),
                         const SizedBox(height: 8),
                         ListTile(
@@ -190,7 +190,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          tileColor: Colors.grey[100],
+                          tileColor: Color(0xffF1EEDC),
                         ),
                         const SizedBox(height: 8),
                         ListTile(
@@ -215,7 +215,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          tileColor: Colors.grey[100],
+                          tileColor: Color(0xffF1EEDC),
                         ),
                       ],
                     ),

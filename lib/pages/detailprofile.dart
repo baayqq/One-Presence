@@ -135,7 +135,7 @@ class _DetailProfileState extends State<DetailProfile> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detail Profil'),
-        backgroundColor: Color(0xff468585),
+        backgroundColor: Color(0xff106D6B),
       ),
       body: SingleChildScrollView(
         child: Padding(

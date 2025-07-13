@@ -191,17 +191,15 @@ class _AbsensState extends State<Absens> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: Color(0xff468585)),
+      appBar: AppBar(backgroundColor: Color(0xff106D6B)),
       body: Column(
         children: [
           // Google Map
-          Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: SizedBox(
-                height: 550,
-                width: double.infinity,
+          Flexible(
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
                 child: GoogleMap(
                   initialCameraPosition: CameraPosition(
                     target: _currentPosition,
@@ -218,187 +216,180 @@ class _AbsensState extends State<Absens> {
             ),
           ),
           // Isi absen di bawah
-          Expanded(
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: SingleChildScrollView(
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 65),
-                  decoration: const BoxDecoration(
-                    color: Color(0x9f468585),
-                    // borderRadius: BorderRadius.only(
-                    //   topLeft: Radius.circular(100),
-                    //   topRight: Radius.circular(100),
-                    // ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 8),
-                        Text(
-                          'Radius lokasi: $_radius meter',
-                          style: const TextStyle(fontSize: 16),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SingleChildScrollView(
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 80),
+                decoration: const BoxDecoration(color: Color(0xff106D6B)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 8),
+                      Text(
+                        'Radius lokasi: $_radius meter',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xffF1EEDC),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Jarak ke kantor: ${_distance.toStringAsFixed(2)} meter',
-                          style: const TextStyle(fontSize: 16),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Jarak ke kantor: ${_distance.toStringAsFixed(2)} meter',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Color(0xffF1EEDC),
                         ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed:
-                              (!_checkedIn &&
-                                      _distance <= _radius &&
-                                      !_isSubmitting)
-                                  ? () async {
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed:
+                            (!_checkedIn &&
+                                    _distance <= _radius &&
+                                    !_isSubmitting)
+                                ? () async {
+                                  if (!mounted) return;
+                                  setState(() {
+                                    _isSubmitting = true;
+                                  });
+                                  try {
+                                    final prefs =
+                                        await SharedPreferences.getInstance();
+                                    final token = prefs.getString('token');
+                                    if (token == null) {
+                                      throw Exception('Token tidak ditemukan');
+                                    }
+                                    final response = await absenCheckIn(
+                                      token: token,
+                                      lat: _currentPosition.latitude,
+                                      lng: _currentPosition.longitude,
+                                      address: _currentAddress,
+                                    );
                                     if (!mounted) return;
-                                    setState(() {
-                                      _isSubmitting = true;
-                                    });
-                                    try {
-                                      final prefs =
-                                          await SharedPreferences.getInstance();
-                                      final token = prefs.getString('token');
-                                      if (token == null) {
-                                        throw Exception(
-                                          'Token tidak ditemukan',
-                                        );
-                                      }
-                                      final response = await absenCheckIn(
-                                        token: token,
-                                        lat: _currentPosition.latitude,
-                                        lng: _currentPosition.longitude,
-                                        address: _currentAddress,
-                                      );
-                                      if (!mounted) return;
-                                      if (response is Map &&
-                                          response.containsKey('message') &&
-                                          response['message']
-                                              .toString()
-                                              .toLowerCase()
-                                              .contains('sudah')) {
-                                        // Jika pesan error dari backend (sudah absen)
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              response['message'].toString(),
-                                            ),
-                                            backgroundColor: Colors.red,
-                                          ),
-                                        );
-                                      } else {
-                                        // Jika response sukses
-                                        setState(() {
-                                          _checkedIn = true;
-                                        });
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              'Absen masuk berhasil!',
-                                            ),
-                                            backgroundColor: Colors.green,
-                                          ),
-                                        );
-                                        await Future.delayed(
-                                          Duration(milliseconds: 500),
-                                        );
-                                        if (!mounted) return;
-                                        Navigator.pushAndRemoveUntil(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => HomeBottom(),
-                                          ),
-                                          (route) => false,
-                                        );
-                                      }
-                                      await _refreshAbsenStatus();
-                                    } catch (e) {
-                                      if (!mounted) return;
-                                      String errorMsg = 'Gagal check-in';
-                                      try {
-                                        final errorJson = e.toString();
-                                        final match = RegExp(
-                                          r'"message":"([^"]+)"',
-                                        ).firstMatch(errorJson);
-                                        if (match != null) {
-                                          errorMsg = match.group(1)!;
-                                        } else {
-                                          errorMsg = e.toString().replaceAll(
-                                            'Exception: ',
-                                            '',
-                                          );
-                                        }
-                                      } catch (_) {}
+                                    if (response is Map &&
+                                        response.containsKey('message') &&
+                                        response['message']
+                                            .toString()
+                                            .toLowerCase()
+                                            .contains('sudah')) {
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
                                         SnackBar(
-                                          content: Text(errorMsg),
+                                          content: Text(
+                                            response['message'].toString(),
+                                          ),
                                           backgroundColor: Colors.red,
                                         ),
                                       );
-                                      await _refreshAbsenStatus();
-                                    } finally {
-                                      if (!mounted) return;
+                                    } else {
                                       setState(() {
-                                        _isSubmitting = false;
+                                        _checkedIn = true;
                                       });
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Absen masuk berhasil!',
+                                          ),
+                                          backgroundColor: Colors.greenAccent,
+                                        ),
+                                      );
+                                      await Future.delayed(
+                                        Duration(milliseconds: 500),
+                                      );
+                                      if (!mounted) return;
+                                      Navigator.pushAndRemoveUntil(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => HomeBottom(),
+                                        ),
+                                        (route) => false,
+                                      );
                                     }
+                                    await _refreshAbsenStatus();
+                                  } catch (e) {
+                                    if (!mounted) return;
+                                    String errorMsg = 'Gagal check-in';
+                                    try {
+                                      final errorJson = e.toString();
+                                      final match = RegExp(
+                                        r'"message":"([^"]+)"',
+                                      ).firstMatch(errorJson);
+                                      if (match != null) {
+                                        errorMsg = match.group(1)!;
+                                      } else {
+                                        errorMsg = e.toString().replaceAll(
+                                          'Exception: ',
+                                          '',
+                                        );
+                                      }
+                                    } catch (_) {}
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(errorMsg),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                    await _refreshAbsenStatus();
+                                  } finally {
+                                    if (!mounted) return;
+                                    setState(() {
+                                      _isSubmitting = false;
+                                    });
                                   }
-                                  : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 32,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
+                                }
+                                : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 32,
                           ),
-                          child:
-                              _isSubmitting
-                                  ? const SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                  : const Text(
-                                    'Check in',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.white,
-                                    ),
-                                  ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
-                        if (_checkedIn)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(
-                              'Sudah check-in',
-                              style: const TextStyle(color: Colors.green),
-                            ),
+                        child:
+                            _isSubmitting
+                                ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : const Text(
+                                  'Check in',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                      ),
+                      if (_checkedIn)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            'Sudah check-in',
+                            style: const TextStyle(color: Colors.green),
                           ),
-                        if (_distance > _radius)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(
-                              'Anda harus berada dalam radius $_radius meter dari kantor.',
-                              style: const TextStyle(color: Colors.red),
-                            ),
+                        ),
+                      if (_distance > _radius)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            'Anda harus berada dalam radius $_radius meter dari kantor.',
+                            style: const TextStyle(color: Colors.red),
                           ),
-                      ],
-                    ),
+                        ),
+                    ],
                   ),
                 ),
               ),

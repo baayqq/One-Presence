@@ -231,6 +231,7 @@ class _HomeSpageState extends State<HomeSpage> {
     final dateNow = DateFormat('EEE, dd MMMM yyyy', 'id_ID').format(_now);
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Column(
         children: [
           // Header dan live attendance
@@ -238,7 +239,7 @@ class _HomeSpageState extends State<HomeSpage> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 30),
             decoration: const BoxDecoration(
-              color: Color(0xff468585),
+              color: Color(0xff106D6B),
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(200),
                 bottomRight: Radius.circular(200),
@@ -367,7 +368,7 @@ class _HomeSpageState extends State<HomeSpage> {
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
-                            color: Colors.teal,
+                            color: Color(0xff106D6B),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -483,7 +484,7 @@ class _HomeSpageState extends State<HomeSpage> {
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.teal,
+                                  backgroundColor: Color(0xff106D6B),
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 12,
                                   ),
@@ -512,7 +513,7 @@ class _HomeSpageState extends State<HomeSpage> {
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey.shade300,
+                                  backgroundColor: Color(0xffF1EEDC),
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 12,
                                   ),
@@ -587,8 +588,8 @@ class _HomeSpageState extends State<HomeSpage> {
                                 ? absen.attendanceDate.substring(5, 7)
                                 : '-';
                         final namaBulan = _getNamaBulan(bulan);
-                        final jamMasuk = absen.checkInTime ?? '-';
-                        final jamKeluar = absen.checkOutTime ?? '-';
+                        final jamMasuk = absen.checkInTime ?? '--';
+                        final jamKeluar = absen.checkOutTime ?? '--';
                         return Padding(
                           padding: const EdgeInsets.symmetric(
                             vertical: 8.0,
@@ -598,7 +599,7 @@ class _HomeSpageState extends State<HomeSpage> {
                             width: double.infinity,
                             height: 72,
                             decoration: BoxDecoration(
-                              color: Color(0x9f468585),
+                              color: Color(0xffF1EEDC),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
@@ -608,7 +609,7 @@ class _HomeSpageState extends State<HomeSpage> {
                                   child: Container(
                                     width: 50,
                                     decoration: BoxDecoration(
-                                      color: Colors.white,
+                                      color: Color(0x9fF1EEDC),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Center(

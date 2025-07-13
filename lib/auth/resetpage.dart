@@ -78,264 +78,287 @@ class _ResetPagesState extends State<ResetPages> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: Color(0xff468585),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Column(
-            children: [
-              SizedBox(height: 250),
-              Text('Reset Password', style: TextStyle(color: Colors.white)),
-              SizedBox(height: 36),
-              Padding(
-                padding: const EdgeInsets.all(28.0),
-                child: Container(
-                  padding: EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Color(0xf2ffffff),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black,
-                        blurRadius: 12,
-                        offset: Offset(2, 2),
-                      ),
-                    ],
-                  ),
-                  child:
-                      !_stepOtp
-                          ? Form(
-                            key: _formKeyEmail,
-                            child: Column(
-                              children: [
-                                Text(
-                                  'Masukan email akun anda',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 20),
-                                TextFormField(
-                                  controller: _emailController,
-                                  decoration: InputDecoration(
-                                    hintText: "Email",
-                                    hintStyle: TextStyle(
-                                      color: Color(0xff333333),
-                                    ),
-                                    prefixIcon: Icon(Icons.email),
-                                    filled: true,
-                                    fillColor: Color(0xffffffff),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Email wajib di isi';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                SizedBox(height: 24),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: 12,
-                                      ),
-                                      backgroundColor: Color(0xff468585),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    onPressed: _loading ? null : _handleSendOtp,
-                                    child:
-                                        _loading
-                                            ? SizedBox(
-                                              width: 24,
-                                              height: 24,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                color: Colors.white,
-                                              ),
-                                            )
-                                            : Text(
-                                              'Kirim OTP',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 20,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                  ),
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "kembali ke ",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => LoginPage(),
-                                          ),
-                                        );
-                                      },
-                                      child: Text(
-                                        "Login",
-                                        style: TextStyle(
-                                          color: Color(0xff0D47A1),
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          )
-                          : Form(
-                            key: _formKeyReset,
-                            child: Column(
-                              children: [
-                                Text(
-                                  'Masukkan kode OTP dan password baru',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 20),
-                                TextFormField(
-                                  controller: _otpController,
-                                  decoration: InputDecoration(
-                                    hintText: "Kode OTP",
-                                    hintStyle: TextStyle(
-                                      color: Color(0xff333333),
-                                    ),
-                                    prefixIcon: Icon(Icons.numbers),
-                                    filled: true,
-                                    fillColor: Color(0xffffffff),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'OTP wajib di isi';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                SizedBox(height: 16),
-                                TextFormField(
-                                  controller: _passwordController,
-                                  obscureText: true,
-                                  decoration: InputDecoration(
-                                    hintText: "Password Baru",
-                                    hintStyle: TextStyle(
-                                      color: Color(0xff333333),
-                                    ),
-                                    prefixIcon: Icon(Icons.lock),
-                                    filled: true,
-                                    fillColor: Color(0xffffffff),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Password wajib di isi';
-                                    }
-                                    if (value.length < 6) {
-                                      return 'Password minimal 6 karakter';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                SizedBox(height: 24),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: 12,
-                                      ),
-                                      backgroundColor: Color(0xff468585),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    onPressed:
-                                        _loading ? null : _handleResetPassword,
-                                    child:
-                                        _loading
-                                            ? SizedBox(
-                                              width: 24,
-                                              height: 24,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                color: Colors.white,
-                                              ),
-                                            )
-                                            : Text(
-                                              'Reset Password',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 20,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                  ),
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "kembali ke ",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => LoginPage(),
-                                          ),
-                                        );
-                                      },
-                                      child: Text(
-                                        "Login",
-                                        style: TextStyle(
-                                          color: Color(0xff0D47A1),
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xff053B37), Color(0xff106D6B)],
+          ),
+        ),
+        child: SingleChildScrollView(
+          child: Center(
+            child: Column(
+              children: [
+                SizedBox(height: 120),
+                SizedBox(
+                  height: 200,
+                  width: 200,
+                  child: Image.asset('assets/icon/icon.png'),
                 ),
-              ),
-            ],
+                SizedBox(height: 36),
+                Padding(
+                  padding: const EdgeInsets.all(28.0),
+                  child: Container(
+                    padding: EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Color(0xf2ffffff),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black,
+                          blurRadius: 12,
+                          offset: Offset(2, 2),
+                        ),
+                      ],
+                    ),
+                    child:
+                        !_stepOtp
+                            ? Form(
+                              key: _formKeyEmail,
+                              child: Column(
+                                children: [
+                                  Text(
+                                    'Masukan email akun anda',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 20),
+                                  TextFormField(
+                                    controller: _emailController,
+                                    decoration: InputDecoration(
+                                      hintText: "Email",
+                                      hintStyle: TextStyle(
+                                        color: Color(0xff333333),
+                                      ),
+                                      prefixIcon: Icon(Icons.email),
+                                      filled: true,
+                                      fillColor: Color(0xffffffff),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Email wajib di isi';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  SizedBox(height: 24),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: 12,
+                                        ),
+                                        backgroundColor: Color(0xff106D6B),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                      ),
+                                      onPressed:
+                                          _loading ? null : _handleSendOtp,
+                                      child:
+                                          _loading
+                                              ? SizedBox(
+                                                width: 24,
+                                                height: 24,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                      color: Colors.white,
+                                                    ),
+                                              )
+                                              : Text(
+                                                'Kirim OTP',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 20,
+                                                  color: Color(0xffF1EEDC),
+                                                ),
+                                              ),
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "kembali ke ",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => LoginPage(),
+                                            ),
+                                          );
+                                        },
+                                        child: Text(
+                                          "Login",
+                                          style: TextStyle(
+                                            color: Color(0xff106D6B),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            )
+                            : Form(
+                              key: _formKeyReset,
+                              child: Column(
+                                children: [
+                                  Text(
+                                    'Masukkan kode OTP dan password baru',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 20),
+                                  TextFormField(
+                                    controller: _otpController,
+                                    decoration: InputDecoration(
+                                      hintText: "Kode OTP",
+                                      hintStyle: TextStyle(
+                                        color: Color(0xff333333),
+                                      ),
+                                      prefixIcon: Icon(Icons.numbers),
+                                      filled: true,
+                                      fillColor: Color(0xffffffff),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'OTP wajib di isi';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  SizedBox(height: 16),
+                                  TextFormField(
+                                    controller: _passwordController,
+                                    obscureText: true,
+                                    decoration: InputDecoration(
+                                      hintText: "Password Baru",
+                                      hintStyle: TextStyle(
+                                        color: Color(0xff333333),
+                                      ),
+                                      prefixIcon: Icon(Icons.lock),
+                                      filled: true,
+                                      fillColor: Color(0xffffffff),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Password wajib di isi';
+                                      }
+                                      if (value.length < 6) {
+                                        return 'Password minimal 6 karakter';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  SizedBox(height: 24),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: 12,
+                                        ),
+                                        backgroundColor: Color(0xff106D6B),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                      ),
+                                      onPressed:
+                                          _loading
+                                              ? null
+                                              : _handleResetPassword,
+                                      child:
+                                          _loading
+                                              ? SizedBox(
+                                                width: 24,
+                                                height: 24,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                      color: Colors.white,
+                                                    ),
+                                              )
+                                              : Text(
+                                                'Reset Password',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 20,
+                                                  color: Color(0xffF1EEDC),
+                                                ),
+                                              ),
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "kembali ke ",
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => LoginPage(),
+                                            ),
+                                          );
+                                        },
+                                        child: Text(
+                                          "Login",
+                                          style: TextStyle(
+                                            color: Color(0xff106D6B),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

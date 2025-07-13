@@ -68,7 +68,7 @@ class _RekapAbsState extends State<RekapAbs> {
               return Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
-                  color: Color(0xff468585),
+                  color: Color(0xff106D6B),
                   // borderRadius: BorderRadius.only(
                   //   bottomLeft: Radius.circular(40),
                   //   bottomRight: Radius.circular(40),
@@ -80,6 +80,7 @@ class _RekapAbsState extends State<RekapAbs> {
                     children: [
                       SizedBox(height: 48),
                       Card(
+                        // color: Color(0xffF1EEDC),
                         margin: const EdgeInsets.only(bottom: 16),
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
@@ -115,9 +116,9 @@ class _RekapAbsState extends State<RekapAbs> {
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.assignment_late),
                           label: const Text('Ajukan Izin'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromARGB(221, 255, 255, 255),
-                          ),
+                          // style: ElevatedButton.styleFrom(
+                          //   backgroundColor: Color(0xffF1EEDC),
+                          // ),
                           onPressed: () async {
                             final result = await showDialog<bool>(
                               context: context,
@@ -340,6 +341,7 @@ class _RekapAbsState extends State<RekapAbs> {
                     final jamMasuk = absen.checkInTime ?? '-';
                     final jamKeluar = absen.checkOutTime ?? '-';
                     return Card(
+                      color: Color(0xffF1EEDC),
                       margin: const EdgeInsets.symmetric(
                         vertical: 6,
                         horizontal: 16,
@@ -352,12 +354,12 @@ class _RekapAbsState extends State<RekapAbs> {
                               tgl,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 20,
+                                fontSize: 16,
                               ),
                             ),
                             Text(
                               namaBulan,
-                              style: const TextStyle(fontSize: 16),
+                              style: const TextStyle(fontSize: 12),
                             ),
                           ],
                         ),
@@ -374,7 +376,7 @@ class _RekapAbsState extends State<RekapAbs> {
                                 Text(
                                   jamMasuk,
                                   style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
+                                    // fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ],
@@ -390,7 +392,7 @@ class _RekapAbsState extends State<RekapAbs> {
                                 Text(
                                   jamKeluar,
                                   style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
+                                    // fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ],
@@ -401,7 +403,10 @@ class _RekapAbsState extends State<RekapAbs> {
                             absen.status == 'izin' && absen.alasanIzin != null
                                 ? Text(
                                   'Izin: ${absen.alasanIzin!}',
-                                  style: const TextStyle(color: Colors.black87),
+                                  style: const TextStyle(
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 )
                                 : null,
                       ),
