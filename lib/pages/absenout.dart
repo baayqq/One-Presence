@@ -25,7 +25,7 @@ class _AbsensOutState extends State<AbsensOut> {
   String _currentAddress = 'Memuat alamat...';
   Marker? _marker;
   bool _loading = true;
-  final double _radius = 10.0; // meter
+  final double _radius = 4.0; // meter
   final LatLng _officeLocation = const LatLng(
     -6.210879,
     106.812942,
@@ -208,6 +208,7 @@ class _AbsensOutState extends State<AbsensOut> {
                                       address: _currentAddress,
                                     );
                                     setState(() {});
+                                    if (!mounted) return;
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text('Berhasil check-out'),
@@ -228,15 +229,24 @@ class _AbsensOutState extends State<AbsensOut> {
                                       final match = RegExp(
                                         r'"message":"([^"]+)"',
                                       ).firstMatch(errorJson);
-                                      if (match != null) {
+                                      if (match != null &&
+                                          match.group(1) != null &&
+                                          match.group(1)!.isNotEmpty) {
                                         errorMsg = match.group(1)!;
+                                      } else if (errorJson.contains('Null')) {
+                                        errorMsg =
+                                            'Anda sudah melakukan izin pada tanggal ini';
                                       } else {
                                         errorMsg = e.toString().replaceAll(
                                           'Exception: ',
                                           '',
                                         );
                                       }
-                                    } catch (_) {}
+                                    } catch (_) {
+                                      errorMsg =
+                                          'Terjadi kesalahan tak terduga.';
+                                    }
+                                    if (!mounted) return;
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(errorMsg),

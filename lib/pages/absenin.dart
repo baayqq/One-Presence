@@ -297,7 +297,7 @@ class _AbsensState extends State<Absens> {
                                           content: Text(
                                             'Absen masuk berhasil!',
                                           ),
-                                          backgroundColor: Colors.greenAccent,
+                                          backgroundColor: Colors.green,
                                         ),
                                       );
                                       await Future.delayed(
