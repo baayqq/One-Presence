@@ -51,3 +51,6 @@ class MyApp extends StatelessWidget {
 // 9CDBA6
 // 50B498
 // 468585
+
+//tampilkan status izin di home page 
+//berikan dumy icon foto saat user tidak mempunyai foto profil di detai profile

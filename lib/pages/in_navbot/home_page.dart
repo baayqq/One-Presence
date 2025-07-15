@@ -237,19 +237,19 @@ class _HomeSpageState extends State<HomeSpage> {
           // Header dan live attendance
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 30),
+            padding: const EdgeInsets.symmetric(vertical: 0),
             decoration: const BoxDecoration(
               color: Color(0xff106D6B),
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(200),
-                bottomRight: Radius.circular(200),
+                bottomLeft: Radius.circular(50),
+                bottomRight: Radius.circular(50),
               ),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
-                  SizedBox(height: 12),
+                  SizedBox(height: 40),
                   Row(
                     children: [
                       _profile != null &&
@@ -299,22 +299,22 @@ class _HomeSpageState extends State<HomeSpage> {
                                             color: Colors.white,
                                           ),
                                         ),
-                                        IconButton(
-                                          onPressed: () {
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  'Fiture akan segera hadir',
-                                                ),
-                                                backgroundColor:
-                                                    Colors.redAccent,
-                                              ),
-                                            );
-                                          },
-                                          icon: Icon(Icons.dark_mode),
-                                        ),
+                                        // IconButton(
+                                        //   onPressed: () {
+                                        //     ScaffoldMessenger.of(
+                                        //       context,
+                                        //     ).showSnackBar(
+                                        //       SnackBar(
+                                        //         content: Text(
+                                        //           'Fiture akan segera hadir',
+                                        //         ),
+                                        //         backgroundColor:
+                                        //             Colors.redAccent,
+                                        //       ),
+                                        //     );
+                                        //   },
+                                        //   icon: Icon(Icons.dark_mode),
+                                        // ),
                                       ],
                                     ),
                                     Text(
@@ -334,212 +334,204 @@ class _HomeSpageState extends State<HomeSpage> {
                     ],
                   ),
                   const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ),
 
-                  // ===== Live Attendance Container =====
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 20,
+          // ===== Live Attendance Container =====
+          Padding(
+            padding: const EdgeInsets.all(18.0),
+            child: Card(
+              elevation: 2,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 20,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
                     ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 6,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      'Live Attendance',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
+                      ),
                     ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Live Attendance',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          timeNow,
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xff106D6B),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          dateNow,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        const Divider(),
-                        const SizedBox(height: 8),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child:
-                              _loadingAbsenToday
-                                  ? const Center(
-                                    child: CircularProgressIndicator(),
-                                  )
-                                  : (_absenTodayError != null &&
-                                      _absenToday != null)
-                                  ? Center(
-                                    child: Text(
-                                      'Gagal memuat absen: $_absenTodayError',
+                    const SizedBox(height: 8),
+                    Text(
+                      timeNow,
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xff106D6B),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      dateNow,
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 12),
+                    const Divider(),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child:
+                          _loadingAbsenToday
+                              ? const Center(child: CircularProgressIndicator())
+                              : (_absenTodayError != null &&
+                                  _absenToday != null)
+                              ? Center(
+                                child: Text(
+                                  'Gagal memuat absen: $_absenTodayError',
+                                ),
+                              )
+                              : Column(
+                                children: [
+                                  const Text(
+                                    'Absen Hari Ini',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                  )
-                                  : Column(
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const Text(
-                                        'Absen Hari Ini',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                      Column(
                                         children: [
-                                          Column(
-                                            children: [
-                                              Text(
-                                                (_absenToday
-                                                                ?.data
-                                                                ?.checkInTime ==
-                                                            null ||
-                                                        _absenToday
-                                                                ?.data
-                                                                ?.checkInTime ==
-                                                            '')
-                                                    ? '-'
-                                                    : _getOnlyTime(
-                                                      _absenToday!
-                                                          .data!
-                                                          .checkInTime,
-                                                    ),
-                                                style: const TextStyle(
-                                                  fontSize: 20,
+                                          Text(
+                                            (_absenToday?.data?.checkInTime ==
+                                                        null ||
+                                                    _absenToday
+                                                            ?.data
+                                                            ?.checkInTime ==
+                                                        '')
+                                                ? '-'
+                                                : _getOnlyTime(
+                                                  _absenToday!
+                                                      .data!
+                                                      .checkInTime,
                                                 ),
-                                              ),
-                                              const Text(
-                                                'Check in',
-                                                style: TextStyle(fontSize: 16),
-                                              ),
-                                            ],
+                                            style: const TextStyle(
+                                              fontSize: 20,
+                                            ),
                                           ),
-                                          const SizedBox(width: 40),
-                                          Column(
-                                            children: [
-                                              Text(
-                                                (_absenToday
-                                                                ?.data
-                                                                ?.checkOutTime ==
-                                                            null ||
-                                                        _absenToday
-                                                                ?.data
-                                                                ?.checkOutTime ==
-                                                            '')
-                                                    ? '-'
-                                                    : _getOnlyTime(
-                                                      _absenToday!
-                                                          .data!
-                                                          .checkOutTime,
-                                                    ),
-                                                style: const TextStyle(
-                                                  fontSize: 20,
+                                          const Text(
+                                            'Check in',
+                                            style: TextStyle(fontSize: 16),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(width: 40),
+                                      Column(
+                                        children: [
+                                          Text(
+                                            (_absenToday?.data?.checkOutTime ==
+                                                        null ||
+                                                    _absenToday
+                                                            ?.data
+                                                            ?.checkOutTime ==
+                                                        '')
+                                                ? '-'
+                                                : _getOnlyTime(
+                                                  _absenToday!
+                                                      .data!
+                                                      .checkOutTime,
                                                 ),
-                                              ),
-                                              const Text(
-                                                'Check out',
-                                                style: TextStyle(fontSize: 16),
-                                              ),
-                                            ],
+                                            style: const TextStyle(
+                                              fontSize: 20,
+                                            ),
+                                          ),
+                                          const Text(
+                                            'Check out',
+                                            style: TextStyle(fontSize: 16),
                                           ),
                                         ],
                                       ),
                                     ],
                                   ),
+                                ],
+                              ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Absens(),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xff106D6B),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Text(
+                              'Check in',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => Absens(),
-                                    ),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Color(0xff106D6B),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AbsensOut(),
                                 ),
-                                child: const Text(
-                                  'Check in',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xffF1EEDC),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => AbsensOut(),
-                                    ),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Color(0xffF1EEDC),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Check out',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.black87,
-                                  ),
-                                ),
+                            child: const Text(
+                              'Check out',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.black87,
                               ),
                             ),
-                          ],
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 20),
+
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Row(
@@ -549,21 +541,9 @@ class _HomeSpageState extends State<HomeSpage> {
                   'Absensi 7 Hari',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                // GestureDetector(
-                //   onTap: () {
-                //     Navigator.push(
-                //       context,
-                //       MaterialPageRoute(
-                //         builder: (context) => DetailAbs(),
-                //       ),
-                //     );
-                //   },
-                //   child: Icon(Icons.history),
-                // ),
               ],
             ),
           ),
-          // Hanya bagian history yang scrollable
           Expanded(
             child:
                 _loading7History
@@ -599,7 +579,7 @@ class _HomeSpageState extends State<HomeSpage> {
                             width: double.infinity,
                             height: 72,
                             decoration: BoxDecoration(
-                              color: Color(0xffF1EEDC),
+                              color: Colors.grey[100],
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
@@ -609,7 +589,7 @@ class _HomeSpageState extends State<HomeSpage> {
                                   child: Container(
                                     width: 50,
                                     decoration: BoxDecoration(
-                                      color: Color(0x9fF1EEDC),
+                                      // color: Color.fromARGB(159, 220, 241, 237),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Center(

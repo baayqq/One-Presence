@@ -270,7 +270,7 @@ class _RekapAbsState extends State<RekapAbs> {
         ),
 
         Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.only(left: 18, right: 18, top: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -278,7 +278,7 @@ class _RekapAbsState extends State<RekapAbs> {
                 'History Absensi',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
-              OutlinedButton.icon(
+              TextButton.icon(
                 icon: const Icon(Icons.date_range),
                 label: Text(
                   _selectedMonth == null
@@ -293,7 +293,7 @@ class _RekapAbsState extends State<RekapAbs> {
             ],
           ),
         ),
-        const SizedBox(height: 8),
+
         Expanded(
           child: FutureBuilder<AbsenHistoryResponse>(
             future: _historyFuture,
@@ -340,75 +340,76 @@ class _RekapAbsState extends State<RekapAbs> {
                     final namaBulan = _getNamaBulan(bulan);
                     final jamMasuk = absen.checkInTime ?? '-';
                     final jamKeluar = absen.checkOutTime ?? '-';
-                    return Card(
-                      color: Color(0xffF1EEDC),
-                      margin: const EdgeInsets.symmetric(
-                        vertical: 6,
-                        horizontal: 16,
-                      ),
-                      child: ListTile(
-                        leading: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              tgl,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Card(
+                        color: Colors.grey[100],
+                        elevation: 1,
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        child: ListTile(
+                          leading: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                tgl,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
                               ),
-                            ),
-                            Text(
-                              namaBulan,
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ],
+                              Text(
+                                namaBulan,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
+                          title: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Check in',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  Text(
+                                    jamMasuk,
+                                    style: const TextStyle(
+                                      // fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(width: 8),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Check out',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  Text(
+                                    jamKeluar,
+                                    style: const TextStyle(
+                                      // fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          subtitle:
+                              absen.status == 'izin' && absen.alasanIzin != null
+                                  ? Text(
+                                    'Izin: ${absen.alasanIzin!}',
+                                    style: const TextStyle(
+                                      color: Colors.black87,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )
+                                  : null,
                         ),
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Check in',
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                                Text(
-                                  jamMasuk,
-                                  style: const TextStyle(
-                                    // fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(width: 8),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Check out',
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                                Text(
-                                  jamKeluar,
-                                  style: const TextStyle(
-                                    // fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        subtitle:
-                            absen.status == 'izin' && absen.alasanIzin != null
-                                ? Text(
-                                  'Izin: ${absen.alasanIzin!}',
-                                  style: const TextStyle(
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                )
-                                : null,
                       ),
                     );
                   },

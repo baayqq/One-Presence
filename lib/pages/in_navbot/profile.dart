@@ -102,9 +102,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const SizedBox(
-                                    height: 16,
-                                  ), 
+                                  const SizedBox(height: 16),
                                   Text(
                                     ' ${profile.name}',
                                     style: const TextStyle(
@@ -134,13 +132,11 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ],
                         ),
-                        const SizedBox(
-                          height: 16,
-                        ),
+                        const SizedBox(height: 16),
                       ],
                     ),
                   ),
-                  
+
                   Padding(
                     padding: const EdgeInsets.all(24.0),
                     child: Column(
@@ -164,7 +160,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          tileColor: Color(0xffF1EEDC),
+                          tileColor: Colors.grey[100],
                         ),
                         const SizedBox(height: 8),
                         ListTile(
@@ -190,7 +186,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          tileColor: Color(0xffF1EEDC),
+                          tileColor: Colors.grey[100],
                         ),
                         const SizedBox(height: 8),
                         ListTile(
@@ -215,7 +211,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          tileColor: Color(0xffF1EEDC),
+                          tileColor: Colors.grey[100],
                         ),
                       ],
                     ),
