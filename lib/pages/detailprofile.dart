@@ -226,7 +226,7 @@ class _DetailProfileState extends State<DetailProfile> {
                         _showTrainingDetailDialog(context);
                       },
                     ),
-                    // FutureBuilder tetap di bawah
+                   
                     const SizedBox(height: 8),
                   ],
                 ],

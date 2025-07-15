@@ -161,7 +161,7 @@ class _EditProfPageState extends State<EditProfPage> {
                   children: [
                     CircleAvatar(
                       radius: 48,
-                      backgroundColor: Colors.teal, // AppColor.secondary
+                      backgroundColor: Colors.teal,
                       backgroundImage:
                           _selectedPhoto != null
                               ? FileImage(_selectedPhoto!)

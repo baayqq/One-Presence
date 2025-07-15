@@ -104,7 +104,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 children: [
                                   const SizedBox(
                                     height: 16,
-                                  ), // Spasi atas sebelum nama
+                                  ), 
                                   Text(
                                     ' ${profile.name}',
                                     style: const TextStyle(
@@ -136,11 +136,11 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         const SizedBox(
                           height: 16,
-                        ), // Spasi bawah setelah foto dan nama
+                        ),
                       ],
                     ),
                   ),
-                  // Tombol menuju detail profil dan tombol lain di bawahnya
+                  
                   Padding(
                     padding: const EdgeInsets.all(24.0),
                     child: Column(
