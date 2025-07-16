@@ -226,8 +226,10 @@ class _HomeSpageState extends State<HomeSpage> {
 
   @override
   Widget build(BuildContext context) {
+    final List<AbsenHistoryItem> izinList =
+        _last7History.where((item) => item.status == 'izin').toList();
     final timeNow = DateFormat('HH:mm:ss', 'id_ID').format(_now);
-    final dateNow = DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(_now);
+    final dateNow = DateFormat('EEE, dd MMMM yyyy', 'id_ID').format(_now);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -528,148 +530,157 @@ class _HomeSpageState extends State<HomeSpage> {
             ),
           ),
           Expanded(
-            child:
-                _loading7History
-                    ? const Center(child: CircularProgressIndicator())
-                    : _history7Error != null
-                    ? Center(child: Text('Gagal memuat data:  _history7Error'))
+            child: _loading7History
+                ? const Center(child: CircularProgressIndicator())
+                : _history7Error != null
+                    ? Center(
+                        child: Text('Gagal memuat data:  $_history7Error'),
+                      )
                     : _last7History.isEmpty
-                    ? const Center(
-                      child: Text('-', style: TextStyle(fontSize: 18)),
-                    )
-                    : ListView.builder(
-                      itemCount: _last7History.length,
-                      physics: const BouncingScrollPhysics(),
-                      itemBuilder: (context, idx) {
-                        final absen = _last7History[idx];
-                        final tgl =
-                            absen.attendanceDate.length >= 10
-                                ? absen.attendanceDate.substring(8, 10)
-                                : '-';
-                        final bulan =
-                            absen.attendanceDate.length >= 7
-                                ? absen.attendanceDate.substring(5, 7)
-                                : '-';
-                        final namaBulan = _getNamaBulan(bulan);
-                        final jamMasuk = absen.checkInTime ?? '--';
-                        final jamKeluar = absen.checkOutTime ?? '--';
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 8.0,
-                            horizontal: 16,
-                          ),
-                          child: Container(
-                            width: double.infinity,
-                            height: 72,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 12),
-                              child: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Container(
-                                      width: 50,
-                                      decoration: BoxDecoration(
-                                        // color: Color.fromARGB(159, 220, 241, 237),
-                                        borderRadius: BorderRadius.circular(8),
+                        ? const Center(
+                            child: Text('-', style: TextStyle(fontSize: 18)),
+                          )
+                        : ListView.builder(
+                            itemCount: _last7History.length,
+                            physics: const BouncingScrollPhysics(),
+                            itemBuilder: (context, idx) {
+                              final absen = _last7History[idx];
+                              final tgl = absen.attendanceDate.length >= 10
+                                  ? absen.attendanceDate.substring(8, 10)
+                                  : '-';
+                              final bulan = absen.attendanceDate.length >= 7
+                                  ? absen.attendanceDate.substring(5, 7)
+                                  : '-';
+                              final namaBulan = _getNamaBulan(bulan);
+
+                              // Cek apakah absen ini adalah izin
+                              final isIzin = absen.status == 'izin' ||
+                                  (absen.alasanIzin != null &&
+                                      absen.alasanIzin!.isNotEmpty);
+
+                              if (isIzin) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 4.0,
+                                    horizontal: 16,
+                                  ),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.orange[50],
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: Colors.orange),
+                                    ),
+                                    child: ListTile(
+                                      leading: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            tgl,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          Text(namaBulan,
+                                              style: const TextStyle(
+                                                  fontSize: 12)),
+                                        ],
                                       ),
-                                      child: Center(
-                                        child: Column(
+                                      title: Text(
+                                        'Izin',
+                                        style: TextStyle(
+                                          color: Colors.orange[800],
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      subtitle: absen.alasanIzin != null &&
+                                              absen.alasanIzin!.isNotEmpty
+                                          ? Text(
+                                              'Alasan:  ${absen.alasanIzin!}',
+                                              style: const TextStyle(
+                                                  color: Colors.black87),
+                                            )
+                                          : null,
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                final jamMasuk = absen.checkInTime ?? '--';
+                                final jamKeluar = absen.checkOutTime ?? '--';
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8.0,
+                                    horizontal: 16,
+                                  ),
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: 72,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[100],
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Container(
+                                            width: 80,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: Center(
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    tgl,
+                                                    style: const TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    namaBulan,
+                                                    style: const TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 24),
+                                        Column(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
-                                            Text(
-                                              tgl,
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            Text(
-                                              namaBulan,
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
+                                            Text(jamMasuk),
+                                            const Text('Check in'),
                                           ],
                                         ),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: 24),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(jamMasuk),
-                                      Text('Check in'),
-                                    ],
-                                  ),
-                                  SizedBox(width: 24),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(jamKeluar),
-                                      Text('Check out'),
-                                    ],
-                                  ),
-                                  SizedBox(width: 40),
-                                  if (absen.status == 'izin')
-                                    Flexible(
-                                      child: Container(
-                                        margin: const EdgeInsets.only(
-                                          left: 12.0,
-                                          right: 12,
-                                        ),
-                                        padding: const EdgeInsets.all(6),
-                                        decoration: BoxDecoration(
-                                          color: Colors.orange[100],
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          border: Border.all(
-                                            color: Colors.orange,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
+                                        const SizedBox(width: 24),
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
-                                            Icon(
-                                              Icons.info_outline,
-                                              color: Colors.orange[800],
-                                              size: 20,
-                                            ),
-                                            SizedBox(width: 6),
-                                            Expanded(
-                                              child: Text(
-                                                absen.alasanIzin != null &&
-                                                        absen
-                                                            .alasanIzin!
-                                                            .isNotEmpty
-                                                    ? 'Izin'
-                                                    : 'Izin',
-                                                style: TextStyle(
-                                                  color: Colors.orange[800],
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
+                                            Text(jamKeluar),
+                                            const Text('Check out'),
                                           ],
                                         ),
-                                      ),
+                                      ],
                                     ),
-                                ],
-                              ),
-                            ),
+                                  ),
+                                );
+                              }
+                            },
                           ),
-                        );
-                      },
-                    ),
           ),
           Padding(
             padding: const EdgeInsets.only(bottom: 12.0, top: 8.0),
