@@ -176,8 +176,10 @@ class _DetailProfileState extends State<DetailProfile> {
                         child: CircleAvatar(
                           radius: 80,
                           backgroundColor: Colors.white,
-                          backgroundImage: const AssetImage(
-                            'assets/images/default_profile.png',
+                          child: Icon(
+                            Icons.account_circle,
+                            size: 80,
+                            color: Colors.grey[400],
                           ),
                         ),
                       ),
@@ -226,7 +228,7 @@ class _DetailProfileState extends State<DetailProfile> {
                         _showTrainingDetailDialog(context);
                       },
                     ),
-                   
+
                     const SizedBox(height: 8),
                   ],
                 ],
