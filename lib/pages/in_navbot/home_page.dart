@@ -298,22 +298,6 @@ class _HomeSpageState extends State<HomeSpage> {
                                             color: Colors.white,
                                           ),
                                         ),
-                                        // IconButton(
-                                        //   onPressed: () {
-                                        //     ScaffoldMessenger.of(
-                                        //       context,
-                                        //     ).showSnackBar(
-                                        //       SnackBar(
-                                        //         content: Text(
-                                        //           'Fiture akan segera hadir',
-                                        //         ),
-                                        //         backgroundColor:
-                                        //             Colors.redAccent,
-                                        //       ),
-                                        //     );
-                                        //   },
-                                        //   icon: Icon(Icons.dark_mode),
-                                        // ),
                                       ],
                                     ),
                                     Text(
@@ -633,11 +617,14 @@ class _HomeSpageState extends State<HomeSpage> {
                                       Text('Check out'),
                                     ],
                                   ),
-                                  Spacer(),
+                                  SizedBox(width: 40),
                                   if (absen.status == 'izin')
                                     Flexible(
                                       child: Container(
-                                        // margin: const EdgeInsets.only(left: 8.0),
+                                        margin: const EdgeInsets.only(
+                                          left: 12.0,
+                                          right: 12,
+                                        ),
                                         padding: const EdgeInsets.all(6),
                                         decoration: BoxDecoration(
                                           color: Colors.orange[100],
@@ -683,6 +670,20 @@ class _HomeSpageState extends State<HomeSpage> {
                         );
                       },
                     ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12.0, top: 8.0),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Text(
+                '© Bayu Saputra',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
           ),
         ],
       ),

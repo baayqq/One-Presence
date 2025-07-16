@@ -140,100 +140,121 @@ class _DetailProfileState extends State<DetailProfile> {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(10.0),
-          child: Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Color(0xffffffff),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Color(0xffffffff),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  (profile.profilePhoto != null &&
-                          profile.profilePhoto!.isNotEmpty)
-                      ? Center(
-                        child: CircleAvatar(
-                          radius: 100,
-                          backgroundColor: Colors.white,
-                          backgroundImage:
-                              base64ImageProvider(profile.profilePhoto!) ??
-                              const AssetImage(
-                                    'assets/images/default_profile.png',
-                                  )
-                                  as ImageProvider,
-                        ),
-                      )
-                      : Center(
-                        child: CircleAvatar(
-                          radius: 80,
-                          backgroundColor: Colors.white,
-                          child: Icon(
-                            Icons.account_circle,
-                            size: 80,
-                            color: Colors.grey[400],
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 24,
+                    horizontal: 20,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      (profile.profilePhoto != null &&
+                              profile.profilePhoto!.isNotEmpty)
+                          ? Center(
+                            child: CircleAvatar(
+                              radius: 100,
+                              backgroundColor: Colors.white,
+                              backgroundImage:
+                                  base64ImageProvider(profile.profilePhoto!) ??
+                                  const AssetImage(
+                                        'assets/images/default_profile.png',
+                                      )
+                                      as ImageProvider,
+                            ),
+                          )
+                          : Center(
+                            child: CircleAvatar(
+                              radius: 80,
+                              backgroundColor: Colors.white,
+                              child: Icon(
+                                Icons.account_circle,
+                                size: 80,
+                                color: Colors.grey[400],
+                              ),
+                            ),
+                          ),
+                      const SizedBox(height: 16),
+                      // Ganti Column data profil menjadi ListTile dengan ikon
+                      ListTile(
+                        leading: Icon(Icons.person),
+                        title: Text('Nama'),
+                        subtitle: Text(profile.name ?? '-'),
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.email),
+                        title: Text('Email'),
+                        subtitle: Text(profile.email ?? '-'),
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.group),
+                        title: Text('Batch'),
+                        subtitle: Text(profile.batchKe?.toString() ?? '-'),
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.wc),
+                        title: Text('Gender'),
+                        subtitle: Text(profile.jenisKelamin ?? '-'),
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.school),
+                        title: Text('Pelatihan'),
+                        subtitle: Text(profile.trainingTitle ?? '-'),
+                      ),
+                      if (profile.batch != null) ...[
+                        ListTile(
+                          leading: Icon(Icons.date_range),
+                          title: Text('Periode Batch'),
+                          subtitle: Text(
+                            '${profile.batch!.startDate} s/d ${profile.batch!.endDate}',
                           ),
                         ),
-                      ),
-                  const SizedBox(height: 16),
-                  // Ganti Column data profil menjadi ListTile dengan ikon
-                  ListTile(
-                    leading: Icon(Icons.person),
-                    title: Text('Nama'),
-                    subtitle: Text(profile.name ?? '-'),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.email),
-                    title: Text('Email'),
-                    subtitle: Text(profile.email ?? '-'),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.group),
-                    title: Text('Batch'),
-                    subtitle: Text(profile.batchKe?.toString() ?? '-'),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.wc),
-                    title: Text('Gender'),
-                    subtitle: Text(profile.jenisKelamin ?? '-'),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.school),
-                    title: Text('Pelatihan'),
-                    subtitle: Text(profile.trainingTitle ?? '-'),
-                  ),
-                  if (profile.batch != null) ...[
-                    ListTile(
-                      leading: Icon(Icons.date_range),
-                      title: Text('Periode Batch'),
-                      subtitle: Text(
-                        '${profile.batch!.startDate} s/d ${profile.batch!.endDate}',
-                      ),
-                    ),
-                  ],
-                  if (profile.training != null) ...[
-                    ListTile(
-                      leading: Icon(Icons.book),
-                      title: Text('Judul Training'),
-                      subtitle: Text(profile.training!.title ?? '-'),
-                      onTap: () {
-                        _showTrainingDetailDialog(context);
-                      },
-                    ),
+                      ],
+                      if (profile.training != null) ...[
+                        ListTile(
+                          leading: Icon(Icons.book),
+                          title: Text('Judul Training'),
+                          subtitle: Text(profile.training!.title ?? '-'),
+                          onTap: () {
+                            _showTrainingDetailDialog(context);
+                          },
+                        ),
 
-                    const SizedBox(height: 8),
-                  ],
-                ],
+                        const SizedBox(height: 8),
+                      ],
+                    ],
+                  ),
+                ),
               ),
-            ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12.0, top: 8.0),
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Text(
+                    '© Bayu Saputra',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

@@ -420,6 +420,20 @@ class _RekapAbsState extends State<RekapAbs> {
             },
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12.0, top: 8.0),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Text(
+              '© Bayu Saputra',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
