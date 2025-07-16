@@ -8,7 +8,6 @@ import 'package:onepresence/model/absen_today_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onepresence/api/absen_history_api.dart';
 import 'package:onepresence/model/absen_history_model.dart';
-import 'package:onepresence/pages/absensi_history_page.dart';
 import 'package:onepresence/api/api_file.dart';
 import 'package:onepresence/model/profile_model.dart';
 import 'dart:convert';
@@ -228,7 +227,7 @@ class _HomeSpageState extends State<HomeSpage> {
   @override
   Widget build(BuildContext context) {
     final timeNow = DateFormat('HH:mm:ss', 'id_ID').format(_now);
-    final dateNow = DateFormat('EEE, dd MMMM yyyy', 'id_ID').format(_now);
+    final dateNow = DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(_now);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -582,54 +581,103 @@ class _HomeSpageState extends State<HomeSpage> {
                               color: Colors.grey[100],
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Container(
-                                    width: 50,
-                                    decoration: BoxDecoration(
-                                      // color: Color.fromARGB(159, 220, 241, 237),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            tgl,
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: Row(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Container(
+                                      width: 50,
+                                      decoration: BoxDecoration(
+                                        // color: Color.fromARGB(159, 220, 241, 237),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Center(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              tgl,
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
-                                          ),
-                                          Text(
-                                            namaBulan,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
+                                            Text(
+                                              namaBulan,
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                SizedBox(width: 24),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [Text(jamMasuk), Text('Check in')],
-                                ),
-                                SizedBox(width: 24),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(jamKeluar),
-                                    Text('Check out'),
-                                  ],
-                                ),
-                              ],
+                                  SizedBox(width: 24),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(jamMasuk),
+                                      Text('Check in'),
+                                    ],
+                                  ),
+                                  SizedBox(width: 24),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(jamKeluar),
+                                      Text('Check out'),
+                                    ],
+                                  ),
+                                  Spacer(),
+                                  if (absen.status == 'izin')
+                                    Flexible(
+                                      child: Container(
+                                        // margin: const EdgeInsets.only(left: 8.0),
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.orange[100],
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          border: Border.all(
+                                            color: Colors.orange,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.info_outline,
+                                              color: Colors.orange[800],
+                                              size: 20,
+                                            ),
+                                            SizedBox(width: 6),
+                                            Expanded(
+                                              child: Text(
+                                                absen.alasanIzin != null &&
+                                                        absen
+                                                            .alasanIzin!
+                                                            .isNotEmpty
+                                                    ? 'Izin'
+                                                    : 'Izin',
+                                                style: TextStyle(
+                                                  color: Colors.orange[800],
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
                             ),
                           ),
                         );
